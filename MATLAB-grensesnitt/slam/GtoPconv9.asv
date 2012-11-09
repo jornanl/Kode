@@ -1,0 +1,94 @@
+function [P, G]=GtoPconv9(Gin,handles)
+% extract a perception map P from global map G based on robotposition and
+% range of sensors
+% 
+PERCRAD=handles.maxPerceptRadius;
+%angularRes=str2double(get(handles.angularRes,'String'));
+
+%PERCRAD=0.5;
+
+% Get data from Gin
+
+Xin  = get(Gin,'x');  
+Cin  = get(Gin,'c');
+
+% Get robot and its pose
+r  = getrobot(Gin); 
+xr = get(r,'x');
+%Cr = get(r,'C');
+
+% init new map P
+P = map('perception map',0);
+
+X=Xin;
+C=Cin;
+
+% only consider point features here
+XnotP=X;
+CnotP=C;
+%XnotP(1)=[];
+f=length(X);
+while f>1,
+    type=get(X{f},'Type');
+    if ~strcmp(type,'point feature'),
+        X(f)=[];
+        C(f,:)=[];
+        C(:,f)=[];
+    else
+        XnotP(f-1)=[];
+        CnotP(f,:)=[];
+        CnotP(:,f)=[];
+    end
+    f=f-1;
+end
+
+
+% add robot object to P and remove it from Gin
+P=addentity(P,r);
+%X(1)=[];
+%C(1,:)=[];
+%C(:,1)=[];
+
+n  = length(X); % number of features in Gin
+
+% if features in Gin, extract features located inside radius and store them in P. Also
+% remove features inside radius from Gin
+if n>1,
+    for i = 2:n,
+        xyFeature(1:2,i-1)=get(X{i},'x'); % xyFeature=[2x1] contains (x,y) values of all beacons in G 
+    end
+    
+    % finding beacons inside perception radius
+    distVector=sqrt((xyFeature(1,1:n-1)-xr(1)).^2 + (xyFeature(2,1:n-1)-xr(2)).^2);
+    insideIndex = find(distVector<=PERCRAD);
+    outsideIndex = find(distVector>PERCRAD);
+    
+    
+
+    % delete features outside radius
+    Xinside=X;
+    Xinside(outsideIndex(1:end)+1)=[];
+
+    % add features inside radius to P
+    for i=2:length(Xinside)
+        P=addentity(P,Xinside{i});
+    end
+
+
+    % delete features inside radius
+    Xoutside=X;
+    Xoutside(insideIndex(1:end)+1)=[];
+    Xoutside=horzcat(Xoutside,Tmp);
+
+    %update covarians matrix 
+    C(insideIndex(1:end)+1,:)=[];
+    C(:,insideIndex(1:end)+1)=[];
+    
+    % update Gin and produce output G
+    G=set(Gin,'x',Xoutside,'c',C);
+    
+
+
+else
+    G=Gin;
+end

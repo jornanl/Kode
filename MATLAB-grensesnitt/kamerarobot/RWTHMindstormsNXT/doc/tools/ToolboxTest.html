@@ -1,0 +1,656 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Tool: ToolboxTest</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="ToolboxTest">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Tool: ToolboxTest</h1>
+         <introduction>
+            <p>This script tries to call as many toolbox functions as (reasonably) possible, with a lot of parameter combinations. Consider
+               it as testcase that every toolbox MUST pass before release and as cross-check if the installation is valid. Make sure to connect
+               a digital sensor to SENSOR_4 before starting. Motors on MOTOR_A and MOTOR_B and a light-sensor on SENSOR_1 are optional.
+            </p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Clean up previous handles</a></li>
+               <li><a href="#2">Set up Matlab</a></li>
+               <li><a href="#3">Set up ports</a></li>
+               <li><a href="#4">Connect to NXT</a></li>
+               <li><a href="#5">Try the commands WITHOUT default handle</a></li>
+               <li><a href="#6"><b>*</b> SENSORS</a></li>
+               <li><a href="#7">analog</a></li>
+               <li><a href="#8">I2C</a></li>
+               <li><a href="#9">MOTORS</a></li>
+               <li><a href="#10">Direct Commands</a></li>
+               <li><a href="#11">Set Default!</a></li>
+               <li><a href="#12">Try the commands WITH default handle</a></li>
+               <li><a href="#13"><b>*</b> SENSORS</a></li>
+               <li><a href="#14">analog</a></li>
+               <li><a href="#15">I2C</a></li>
+               <li><a href="#16">MOTORS</a></li>
+               <li><a href="#17">Direct Commands</a></li>
+               <li><a href="#18">More Motor Stuff</a></li>
+            </ul>
+         </div>
+         <h2>Clean up previous handles<a name="1"></a></h2><pre class="codeinput">COM_CloseNXT <span class="string">all</span>
+</pre><h2>Set up Matlab<a name="2"></a></h2><pre class="codeinput">clear <span class="string">all</span> <span class="comment">% if you use clear all, call COM_CloseNXT all before, as we did!</span>
+close <span class="string">all</span>
+format <span class="string">compact</span>
+
+DebugMode <span class="string">off</span>
+</pre><h2>Set up ports<a name="3"></a></h2><pre class="codeinput">analogPort = SENSOR_1;
+digitalPort = SENSOR_4;
+</pre><h2>Connect to NXT<a name="4"></a></h2><pre class="codeinput">disp(<span class="string">'Connecting...'</span>)
+
+<span class="comment">% different syntaxes and things</span>
+h = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_CloseNXT(h);
+h = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_CloseNXT(<span class="string">'all'</span>);
+
+h = COM_OpenNXTEx(<span class="string">'Any'</span>, <span class="string">''</span>, <span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+</pre><h2>Try the commands WITHOUT default handle<a name="5"></a></h2><pre class="codeinput">disp(<span class="string">'*** Commands without default handle'</span>)
+</pre><h2><b>*</b> SENSORS<a name="6"></a></h2><pre class="codeinput">disp(<span class="string">'Sensors...'</span>)
+
+port = analogPort;
+</pre><h2>analog<a name="7"></a></h2><pre class="codeinput"><span class="comment">%light</span>
+OpenLight(port, <span class="string">'active'</span>, h);
+NXT_ResetInputScaledValue(port, h);
+GetLight(port, h);
+CloseSensor(port, h);
+
+OpenLight(port, <span class="string">'inactive'</span>, h);
+GetLight(port, h);
+CloseSensor(port, h);
+
+<span class="comment">%sound</span>
+OpenSound(port, <span class="string">'db'</span>, h);
+GetSound(port, h);
+CloseSensor(port, h);
+
+OpenSound(port, <span class="string">'dba'</span>, h);
+GetSound(port, h);
+CloseSensor(port, h);
+
+<span class="comment">%switch</span>
+OpenSwitch(port, h);
+GetSwitch(port, h);
+CloseSensor(port, h);
+
+
+port = digitalPort;
+</pre><h2>I2C<a name="8"></a></h2><pre class="codeinput">disp(<span class="string">'I2C...'</span>)
+
+<span class="comment">%ultrasonic</span>
+OpenUltrasonic(port, <span class="string">''</span>, h);
+GetUltrasonic(port, h);
+CloseSensor(port, h);
+
+OpenUltrasonic(port, <span class="string">'snapshot'</span>, h);
+USMakeSnapshot(port, h);
+USGetSnapshotResults(port, h);
+CloseSensor(port, h);
+
+<span class="comment">%compass</span>
+OpenCompass(port, h);
+GetCompass(port, h);
+CalibrateCompass(port, true, h);
+pause(0.5);
+CalibrateCompass(port, false, h);
+CloseSensor(port, h);
+
+<span class="comment">%acceleration</span>
+OpenAccelerator(port, h);
+GetAccelerator(port, h);
+CloseSensor(port, h);
+
+<span class="comment">%infrared</span>
+OpenInfrared(port, h);
+GetInfrared(port, h);
+CloseSensor(port, h);
+</pre><h2>MOTORS<a name="9"></a></h2><pre class="codeinput">port = MOTOR_A;
+port2 = MOTOR_B;
+disp(<span class="string">'Motors...'</span>)
+
+StopMotor(<span class="string">'all'</span>, <span class="string">'brake'</span>, h);
+StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>, h);
+
+SwitchLamp(port, <span class="string">'on'</span>, h);
+SwitchLamp(port, <span class="string">'off'</span>, h);
+
+GetMotorSettings(port, h);
+
+ResetMotorAngle(port, h);
+
+MotorRotateAbs(port,50,20, h);
+
+WaitForMotor(port, 1, h);
+</pre><h2>Direct Commands<a name="10"></a></h2><pre class="codeinput">disp(<span class="string">'Some direct commands...'</span>)
+
+
+NXT_ResetMotorPosition(port, true, h);
+NXT_ResetMotorPosition(port, false, h);
+
+NXT_SendKeepAlive(<span class="string">'dontreply'</span>, h);
+
+NXT_PlayTone(800, 500, h);
+
+sleeptime = NXT_SendKeepAlive(<span class="string">'reply'</span>, h);
+battery   = NXT_GetBatteryLevel(h);
+firmware  = NXT_GetFirmwareVersion(h);
+
+battery
+sleeptime
+firmware
+</pre><h2>Set Default!<a name="11"></a></h2><pre class="codeinput">COM_SetDefaultNXT(h);
+</pre><h2>Try the commands WITH default handle<a name="12"></a></h2><pre class="codeinput">disp(<span class="string">'*** Commands with default handle'</span>)
+</pre><h2><b>*</b> SENSORS<a name="13"></a></h2><pre class="codeinput">disp(<span class="string">'Sensors...'</span>)
+
+port = analogPort;
+</pre><h2>analog<a name="14"></a></h2><pre class="codeinput"><span class="comment">%light</span>
+OpenLight(port, <span class="string">'active'</span>);
+NXT_ResetInputScaledValue(port);
+GetLight(port);
+CloseSensor(port);
+
+OpenLight(port, <span class="string">'inactive'</span>);
+GetLight(port);
+CloseSensor(port);
+
+<span class="comment">%sound</span>
+OpenSound(port, <span class="string">'db'</span>);
+GetSound(port);
+CloseSensor(port);
+
+OpenSound(port, <span class="string">'dba'</span>);
+GetSound(port);
+CloseSensor(port);
+
+<span class="comment">%switch</span>
+OpenSwitch(port);
+GetSwitch(port);
+CloseSensor(port);
+
+
+port = digitalPort;
+</pre><h2>I2C<a name="15"></a></h2><pre class="codeinput">disp(<span class="string">'I2C...'</span>)
+
+<span class="comment">%ultrasonic</span>
+OpenUltrasonic(port, <span class="string">''</span>);
+GetUltrasonic(port);
+CloseSensor(port);
+
+OpenUltrasonic(port, <span class="string">'snapshot'</span>);
+USMakeSnapshot(port);
+USGetSnapshotResults(port);
+CloseSensor(port);
+
+<span class="comment">%compass</span>
+OpenCompass(port);
+GetCompass(port);
+CalibrateCompass(port, true);
+pause(0.5);
+CalibrateCompass(port, false);
+CloseSensor(port);
+
+<span class="comment">%acceleration</span>
+OpenAccelerator(port);
+GetAccelerator(port);
+CloseSensor(port);
+
+<span class="comment">%infrared</span>
+OpenInfrared(port);
+GetInfrared(port);
+CloseSensor(port);
+</pre><h2>MOTORS<a name="16"></a></h2><pre class="codeinput">port = MOTOR_A;
+port2 = MOTOR_B;
+disp(<span class="string">'Motors...'</span>)
+
+StopMotor(<span class="string">'all'</span>, <span class="string">'brake'</span>);
+StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+
+SwitchLamp(port, <span class="string">'on'</span>);
+SwitchLamp(port, <span class="string">'off'</span>);
+
+GetMotorSettings(port);
+
+ResetMotorAngle(port);
+
+MotorRotateAbs(port,50,20);
+
+WaitForMotor(port, 1);
+</pre><h2>Direct Commands<a name="17"></a></h2><pre class="codeinput">disp(<span class="string">'Some direct commands...'</span>)
+
+
+NXT_ResetMotorPosition(port, true);
+NXT_ResetMotorPosition(port, false);
+
+NXT_SendKeepAlive(<span class="string">'dontreply'</span>);
+
+NXT_PlayTone(800, 500);
+
+sleeptime = NXT_SendKeepAlive(<span class="string">'reply'</span>);
+battery   = NXT_GetBatteryLevel(h);
+firmware  = NXT_GetFirmwareVersion(h);
+
+battery
+sleeptime
+firmware
+</pre><h2>More Motor Stuff<a name="18"></a></h2><pre class="codeinput">disp(<span class="string">'More Motor...'</span>)
+SetMotor(port);
+    GetMotor();
+
+    SyncToMotor(<span class="string">'off'</span>);
+    SpeedRegulation(<span class="string">'off'</span>);
+    SetRampMode(<span class="string">'off'</span>);
+    SetTurnRatio(0);
+    SetAngleLimit(234);
+    SetPower(34)
+SendMotorSettings();
+
+pause(0.5);
+StopMotor(port, <span class="string">'off'</span>);
+
+SetMotor(port);
+    SyncToMotor(<span class="string">'off'</span>);
+    SpeedRegulation(<span class="string">'on'</span>);
+    SetRampMode(<span class="string">'off'</span>);
+    SetTurnRatio(0);
+    SetAngleLimit(134);
+    SetPower(-34)
+SendMotorSettings();
+
+pause(0.5);
+StopMotor(port, <span class="string">'off'</span>);
+
+SetMotor(port);
+    SyncToMotor(<span class="string">'off'</span>);
+    SpeedRegulation(<span class="string">'on'</span>);
+    SetRampMode(<span class="string">'up'</span>);
+    SetTurnRatio(0);
+    SetAngleLimit(434);
+    SetPower(44)
+SendMotorSettings();
+
+pause(0.5);
+StopMotor(port, <span class="string">'off'</span>);
+
+SetMotor(port);
+    SpeedRegulation(<span class="string">'off'</span>);
+    SyncToMotor(port2);
+    SetRampMode(<span class="string">'off'</span>);
+    SetTurnRatio(34);
+    SetAngleLimit(334);
+    SetPower(34)
+SendMotorSettings();
+
+pause(0.5);
+StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+
+CloseSensor(port);
+
+COM_CloseNXT(h);
+
+disp(<span class="string">'*** Test successful so far ***'</span>)
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Tool: ToolboxTest
+% This script tries to call as many toolbox functions as (reasonably) possible,
+% with a lot of parameter combinations. Consider it as testcase
+% that every toolbox MUST pass before release and as cross-check
+% if the installation is valid.
+% Make sure to connect a digital sensor to SENSOR_4 before starting.
+% Motors on MOTOR_A and MOTOR_B and a light-sensor on SENSOR_1 are optional.
+
+
+%% Clean up previous handles
+COM_CloseNXT all
+
+%% Set up Matlab
+clear all % if you use clear all, call COM_CloseNXT all before, as we did!
+close all
+format compact
+
+DebugMode off
+
+
+%% Set up ports
+
+analogPort = SENSOR_1;
+digitalPort = SENSOR_4;
+ 
+
+%% Connect to NXT
+disp('Connecting...')
+
+% different syntaxes and things
+h = COM_OpenNXT('bluetooth.ini', 'check');
+COM_CloseNXT(h);
+h = COM_OpenNXT('bluetooth.ini', 'check');
+COM_CloseNXT('all');
+
+h = COM_OpenNXTEx('Any', '', 'bluetooth.ini', 'check');
+
+
+
+%% Try the commands WITHOUT default handle
+disp('*** Commands without default handle')
+
+%% *** SENSORS
+disp('Sensors...')
+
+port = analogPort;
+%% analog
+%light
+OpenLight(port, 'active', h);
+NXT_ResetInputScaledValue(port, h);
+GetLight(port, h);
+CloseSensor(port, h);
+
+OpenLight(port, 'inactive', h);
+GetLight(port, h);
+CloseSensor(port, h);
+
+%sound
+OpenSound(port, 'db', h);
+GetSound(port, h);
+CloseSensor(port, h);
+
+OpenSound(port, 'dba', h);
+GetSound(port, h);
+CloseSensor(port, h);
+
+%switch
+OpenSwitch(port, h);
+GetSwitch(port, h);
+CloseSensor(port, h);
+
+
+port = digitalPort;
+
+%% I2C
+disp('I2C...')
+
+%ultrasonic
+OpenUltrasonic(port, '', h);
+GetUltrasonic(port, h);
+CloseSensor(port, h);
+
+OpenUltrasonic(port, 'snapshot', h);
+USMakeSnapshot(port, h);
+USGetSnapshotResults(port, h);
+CloseSensor(port, h);
+
+%compass
+OpenCompass(port, h);
+GetCompass(port, h);
+CalibrateCompass(port, true, h);
+pause(0.5);
+CalibrateCompass(port, false, h);
+CloseSensor(port, h);
+
+%acceleration
+OpenAccelerator(port, h);
+GetAccelerator(port, h);
+CloseSensor(port, h);
+
+%infrared
+OpenInfrared(port, h);
+GetInfrared(port, h);
+CloseSensor(port, h);
+
+
+%% MOTORS
+port = MOTOR_A;
+port2 = MOTOR_B;
+disp('Motors...')
+
+StopMotor('all', 'brake', h);
+StopMotor('all', 'off', h);
+
+SwitchLamp(port, 'on', h);
+SwitchLamp(port, 'off', h);
+
+GetMotorSettings(port, h);
+
+ResetMotorAngle(port, h);
+
+MotorRotateAbs(port,50,20, h);
+
+WaitForMotor(port, 1, h);
+
+
+%% Direct Commands
+disp('Some direct commands...')
+
+
+NXT_ResetMotorPosition(port, true, h);
+NXT_ResetMotorPosition(port, false, h);
+ 
+NXT_SendKeepAlive('dontreply', h);
+
+NXT_PlayTone(800, 500, h);
+ 
+sleeptime = NXT_SendKeepAlive('reply', h);
+battery   = NXT_GetBatteryLevel(h);
+firmware  = NXT_GetFirmwareVersion(h);
+
+battery
+sleeptime
+firmware
+
+
+%% Set Default!
+
+COM_SetDefaultNXT(h);
+
+%% Try the commands WITH default handle
+disp('*** Commands with default handle')
+
+%% *** SENSORS
+disp('Sensors...')
+
+port = analogPort;
+%% analog
+%light
+OpenLight(port, 'active');
+NXT_ResetInputScaledValue(port);
+GetLight(port);
+CloseSensor(port);
+
+OpenLight(port, 'inactive');
+GetLight(port);
+CloseSensor(port);
+
+%sound
+OpenSound(port, 'db');
+GetSound(port);
+CloseSensor(port);
+
+OpenSound(port, 'dba');
+GetSound(port);
+CloseSensor(port);
+
+%switch
+OpenSwitch(port);
+GetSwitch(port);
+CloseSensor(port);
+
+
+port = digitalPort;
+
+%% I2C
+disp('I2C...')
+
+%ultrasonic
+OpenUltrasonic(port, '');
+GetUltrasonic(port);
+CloseSensor(port);
+
+OpenUltrasonic(port, 'snapshot');
+USMakeSnapshot(port);
+USGetSnapshotResults(port);
+CloseSensor(port);
+
+%compass
+OpenCompass(port);
+GetCompass(port);
+CalibrateCompass(port, true);
+pause(0.5);
+CalibrateCompass(port, false);
+CloseSensor(port);
+
+%acceleration
+OpenAccelerator(port);
+GetAccelerator(port);
+CloseSensor(port);
+
+%infrared
+OpenInfrared(port);
+GetInfrared(port);
+CloseSensor(port);
+
+
+%% MOTORS
+port = MOTOR_A;
+port2 = MOTOR_B;
+disp('Motors...')
+
+StopMotor('all', 'brake');
+StopMotor('all', 'off');
+
+SwitchLamp(port, 'on');
+SwitchLamp(port, 'off');
+
+GetMotorSettings(port);
+
+ResetMotorAngle(port);
+
+MotorRotateAbs(port,50,20);
+
+WaitForMotor(port, 1);
+
+
+%% Direct Commands
+disp('Some direct commands...')
+
+
+NXT_ResetMotorPosition(port, true);
+NXT_ResetMotorPosition(port, false);
+ 
+NXT_SendKeepAlive('dontreply');
+
+NXT_PlayTone(800, 500);
+ 
+sleeptime = NXT_SendKeepAlive('reply');
+battery   = NXT_GetBatteryLevel(h);
+firmware  = NXT_GetFirmwareVersion(h);
+
+battery
+sleeptime
+firmware
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+%% More Motor Stuff
+disp('More Motor...')
+SetMotor(port);
+    GetMotor();
+    
+    SyncToMotor('off');
+    SpeedRegulation('off');
+    SetRampMode('off');
+    SetTurnRatio(0);
+    SetAngleLimit(234);
+    SetPower(34)
+SendMotorSettings();    
+
+pause(0.5);
+StopMotor(port, 'off');
+
+SetMotor(port);
+    SyncToMotor('off');
+    SpeedRegulation('on');
+    SetRampMode('off');
+    SetTurnRatio(0);
+    SetAngleLimit(134);
+    SetPower(-34)
+SendMotorSettings();    
+
+pause(0.5);
+StopMotor(port, 'off');
+
+SetMotor(port);
+    SyncToMotor('off');
+    SpeedRegulation('on');
+    SetRampMode('up');
+    SetTurnRatio(0);
+    SetAngleLimit(434);
+    SetPower(44)
+SendMotorSettings();    
+
+pause(0.5);
+StopMotor(port, 'off');
+
+SetMotor(port);
+    SpeedRegulation('off');
+    SyncToMotor(port2);
+    SetRampMode('off');
+    SetTurnRatio(34);
+    SetAngleLimit(334);
+    SetPower(34)
+SendMotorSettings();    
+
+pause(0.5);
+StopMotor('all', 'off');
+
+CloseSensor(port);
+
+COM_CloseNXT(h);
+
+disp('*** Test successful so far ***')
+
+
+
+
+
+
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

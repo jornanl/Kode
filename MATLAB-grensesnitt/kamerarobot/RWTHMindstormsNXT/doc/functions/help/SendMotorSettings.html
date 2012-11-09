@@ -1,0 +1,122 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>SendMotorSettings</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_SendMotorSettings">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>SendMotorSettings</h1>
+         <introduction>
+            <p>Sends previously specified settings to current active motor.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#5">Description</a></li>
+               <li><a href="#11">Example</a></li>
+               <li><a href="#13">See also</a></li>
+               <li><a href="#15">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>SendMotorSettings()</tt></p>
+         <p><tt>SendMotorSettings(port, power, angle, speedRegulation, syncedToMotor, turnRatio, rampMode)</tt></p>
+         <h2>Description<a name="5"></a></h2>
+         <p><tt>SendMotorSettings()</tt> sends the previously specified settings of the current motor. The motor settings are set by the functions <tt>SetMotor</tt>, <tt>SetPower</tt>, <tt>SetAngleLimit</tt>, <tt>SpeedRegulation</tt>, <tt>SyncToMotor</tt>, <tt>SetTurnRatio</tt> and <tt>SetRampMode</tt>.
+         </p>
+         <p><tt>SendMotorSettings(port, power, angle, speedRegulation, syncedToMotor, turnRatio, rampMode)</tt> sends the given settings like motor <tt>port</tt> (<tt>MOTOR_A</tt>, <tt>MOTOR_B</tt> or <tt>MOTOR_C</tt>), the <tt>power</tt> (<tt>-100...100</tt>, the <tt>angle</tt> limit, <tt>speedRegulation</tt> (<tt>'on'</tt>, <tt>'off'</tt>), <tt>syncedToMotor</tt> (<tt>MOTOR_A</tt>, <tt>MOTOR_B</tt>, <tt>MOTOR_C</tt>), <tt>turnRatio</tt> (<tt>-100...100</tt>) and <tt>rampMode</tt> (<tt>'off'</tt>, <tt>'up'</tt>, <tt>'down'</tt>).
+         </p>
+         <p><b>Note:</b></p>
+         <p>All settings like power, angle limit and so on, will only take effect once you send them to the motor using THIS function.
+            Note that if you have synced two motors together, this function internally sends two packets to both the motors. This is required,
+            but you can work as if this was just one command.
+         </p>
+         <h2>Example<a name="11"></a></h2><pre class="codeinput">   SetMotor(MOTOR_B);
+   	SyncToMotor(MOTOR_C);
+   	SetPower(76);
+   	SetAngleLimit(4*360);
+   	SetTurnRatio(20);
+   SendMotorSettings();
+</pre><h2>See also<a name="13"></a></h2>
+         <p>
+            MOTOR_B, MOTOR_C
+         </p>
+         <h2>Signature<a name="15"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% SendMotorSettings
+% Sends previously specified settings to current active motor.
+%%
+%% Syntax
+% |SendMotorSettings()|
+%%
+% |SendMotorSettings(port, power, angle, speedRegulation, syncedToMotor, turnRatio, rampMode)|
+%%
+%% Description
+% |SendMotorSettings()| sends the previously specified settings of the current motor. The motor
+% settings are set by the functions |SetMotor|, |SetPower|, |SetAngleLimit|, |SpeedRegulation|,
+% |SyncToMotor|, |SetTurnRatio| and |SetRampMode|.
+%%
+% |SendMotorSettings(port, power, angle, speedRegulation, syncedToMotor, turnRatio, rampMode)|
+% sends the given settings like motor |port| (|MOTOR_A|, |MOTOR_B| or |MOTOR_C|), the |power|
+% (|-100...100|, the |angle| limit, |speedRegulation| (|'on'|, |'off'|), |syncedToMotor|
+% (|MOTOR_A|, |MOTOR_B|, |MOTOR_C|), |turnRatio| (|-100...100|) and |rampMode| (|'off'|, |'up'|,
+% |'down'|).
+%%
+%%
+% *Note:*
+%%
+% All settings like power, angle limit and so on, will only take effect once you send them to the
+% motor using THIS function. Note that if you have synced two motors together, this function
+% internally sends two packets to both the motors. This is required, but you can work as if this
+% was just one command.
+%%
+%% Example
+   SetMotor(MOTOR_B);
+   	SyncToMotor(MOTOR_C);
+   	SetPower(76);
+   	SetAngleLimit(4*360);
+   	SetTurnRatio(20);
+   SendMotorSettings();
+%%
+%% See also
+% GetMotorSettings, SetMotor, SetPower, SpeedRegulation, SyncToMotor, SetTurnRatio, SetRampMode, NXT_SetOutputState, MOTOR_A, MOTOR_B, MOTOR_C
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

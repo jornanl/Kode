@@ -1,0 +1,310 @@
+function beaconSLAM(myCon,myHandles,myParams)
+global RUNNING;
+
+% initial robot start pose [m][m][rad]
+%myParams.robot.x = [0.5 0.5 0]';
+% initial robot pose covariance
+%myParams.robot.C = 0.0001*eye(3);
+
+myParams.robot.class = 'robotdd';
+%myparams.robot.formtype = 4;
+%      TYPE = 0 draws only a cross with orientation theta
+%      TYPE = 1 is a differential drive robot without contour
+%      TYPE = 2 is a differential drive robot with round shape
+%      TYPE = 3 is a round shaped robot with a line at theta
+%      TYPE = 4 is a differential drive robot with rectangular shape
+%      TYPE = 5 is a rectangular shaped robot with a line at theta
+% robot-to-sensor transform expressed in the
+% robot frame with units [m] [m] [rad]
+%myParams.robot.xsensor = [0; 0; 0.0];
+
+dispmode = myParams.displayGlobal;
+display = myParams.displayLocal;
+displaying= myParams.displayMatch;
+%    MODE is between 0 and 4. With 0 the algorithm runs through, with 1 the
+%    global map is drawn at each step, and paused if DISPLAYMODE = 2. with
+%    DISPLAYMODE = 3, the global and the local map is drawn, and paused if
+%    DISPLAYMODE = 4.
+
+% ----- Feature Extraction ----- %
+% Minimum distance between beacon's
+%myParams.beaconthreshdist = 0.05;   % in [m]
+% constant beacon covariance matrix
+myParams.Cb = 0.01*eye(2);
+% minimal nof raw points on reflector in order to be valid
+myParams.minnpoints = 1;
+% significance level for NNSF matching
+%myParams.alpha = 0.75;
+
+myParams.robot.xsensor = [0 0 0];
+G = initmap(0,'global map',myParams);
+IRdata.params.xs= myParams.robot.xsensor;
+istep = 0;
+
+%%Trond
+
+initGaps=[];
+%navData.intersection.pose = [0 0];
+navData.robotPath=[];
+navData.state=0; 
+navData.backTrackPoint=[];
+navData.STARTbackTrackPoint=[];
+navData.backTrackPointAtGap=[];
+navData.allBackTrackPoints=[0];
+navData.backTrackPointAtGap=[];
+navData.lastHeading=0;
+gaps=[];
+cnt=0;
+clc;
+%%Trond
+while(RUNNING)
+
+    drawnow;%keep the GUI active   
+    
+    set(G,'time',istep);
+    Gin = G;
+    
+    %r = getrobot(Gin);
+    
+% CAS-original    
+% NOT USED 
+% [r,Frout,path] = predict(r,sensors(1)) 
+% Given the robot at its initial pose and the encoder data in sensors(i)
+% the predict method performs the state prediction of the robot. It re-
+% turns the new pose, its covariance matrix, the Jacobian of the process
+% model derived with respect to the robot and a 3xn matrix PATH of all
+% poses between xr and xrout    
+% 
+
+    % Get the robots pose. A simple version of the CAS-predict method is
+    % RUNNING on the robots CPU.
+    [myNewpose,error]=getRobotPose(myCon,myHandles);
+    if(error)
+        disp('error fetching robot pose');
+    end;
+    
+    myNewpose=[myNewpose(1)/1000 myNewpose(2)/1000 myNewpose(3)];
+    
+    utover= get(Gin,'x');
+    utover{1,1}=set( utover{1,1},'x', myNewpose' );
+    Gin=set(Gin,'x',utover);
+    % Predict the map given the predicted robot and the Jacobian FROUT
+    %Gin = setrobot(Gin,r);
+%     robotHack=get(Gin,'x');
+%     robotHack{1,1}=r;
+%     Gin=set(Gin,'x',robotHack);
+
+%    Frout = eye(3); % work around, not using the original-predict method.     
+    % Predict the map given the predicted robot and the Jacobian FROUT    
+%    Gin = robotdisplacement(Gin,get(r,'x'),get(r,'C'),Frout);
+
+    %assignin('base','myMap',Gin);
+    %pause;
+
+    %gather lots of data
+    IRdata.steps.data1=0;
+    IRdata.steps.data2=0;
+    IRdata.steps.data3=0;
+    a_step=0;
+    for rAngel=1:5:179,
+         
+        drawnow; % keep the GUI active        
+                  
+%         %Set radar angel ---- 
+        if( serialAsyncWrite( myCon,strcat('r',rAngel ) ) )   
+             set(myHandles.statusText,'String','Failed setting radar. Unable to send serial data' );    
+        else           
+       
+            %pause(0.5);% wait for radar to move
+            cnt=0;
+            for telle=1:3
+                
+                [err,myData] = getScanData(myCon,myHandles);
+%             
+                if(err)
+                    set(myHandles.statusText,'String','Failed reading IR.' );    
+                %elseif(myData==255)
+                %    cnt=cnt+1;
+                %    continue;
+                elseif(myData>60)
+                    cnt=cnt+1;
+                    continue;                    
+                else
+                    
+                    [x,y] = pol2cart( (pi*(90-rAngel))/180,(myData/100)+0.06);
+
+                    IRdata.steps.data1=telle;
+                    IRdata.steps.data2(telle,1)=x;
+                    IRdata.steps.data3(telle,1)=y;
+                end;
+            
+            end;
+            
+            if (cnt==3),
+                
+                %myData=-4;    
+                
+                %[x,y] = pol2cart( (pi*(90-rAngel))/180,(myData/100)+0.06);
+
+                IRdata.steps.data1=telle;
+                IRdata.steps.data2=[0;0;0];
+                IRdata.steps.data3=[0;0;0];
+            end
+            %rAngel;
+            %IR=myData;
+        end;
+                
+        if(~RUNNING)
+            break;
+        end;
+        
+    
+        if ~myParams.simulation,
+      	 % turning servo to initial position after each scan
+            if( serialAsyncWrite( myCon,strcat('r',90) ) ),   
+                set(myHandles.statusText,'String','Failed setting radar. Unable to send serial data' );
+            end
+            pause(0.3); % wait for servo
+        end
+        
+    
+        % Extract features from the raw measurements in data structure given the 
+        % extraction algorithm parameters in myPARAMS. The local map L is returned
+        % With the flag DISPLAY = 1, the extraction result is plotted in
+        % a new figure window.
+        tic
+        L = extractbeacons( IRdata ,myParams,display,myNewpose);
+        O(1)=toc;
+        % --------------------------
+        % --- Measurement Prediction
+        % --------------------------
+    
+        % Predict the map G at the current robot pose, its uncertainty and the
+        % robot-to-sensor displacement in PARAMS.
+        tic
+        [Gpred,Hpred] = predictmeasurements(Gin);
+        %[Gpred,Hpred] = predictmeasurementsBeacons(Gin);
+        O(2)=toc; 
+        % ------------
+        % --- Matching
+        % ------------
+         
+        % Apply the nearest neighbor standard filter to match the observations in
+        % the local map L to the predicted measurements GPRED and accept the 
+        % pairing on the level alpha in PARAMS.
+        tic
+        [nu,R,H,associations] = matchnnsf(Gpred,Hpred,L,myParams,displaying);
+        O(3)=toc;         
+        % --------------
+        % --- Estimation
+        % --------------
+         
+        % Update the map with an extended Kalman filter based on the stacked
+        % innovation vector nu and the stacked observation covariance matrix R.
+        tic
+        G = estimatemap(Gin,nu,R,H);
+        O(4)=toc; 
+        % ------------------------------
+        % --- Integrate new observations
+        % ------------------------------
+        % Add the non-associated observations marked by a -1 as the global matching 
+        % feature index in ASSOCIATIONS to the map and return the augmented map
+        tic
+        G = integratenewobs(G,L,associations);
+        O(5)=toc;
+        
+    
+    	%G=set(G,'time',istep);
+        Gin = G;        
+        
+        
+        
+        if(~RUNNING)
+            break;
+        end;
+    %a_step=a_step+1;    
+    end;% for angle
+    
+    
+    %record robot path
+    % added by Trond M
+    %figure(9);clf;hold on;
+    %plot(O)
+    navData.robotPath(istep+1,1:1:3) = myNewpose;
+    totalDist=0;
+    for t=2:1:istep+1,
+        poseM(1:2)=navData.robotPath(t-1,1:2);
+        poseN(1:2)=navData.robotPath(t,1:2);
+        totalDist=totalDist + sqrt((poseN(1)-poseM(1)).^2+(poseN(2)-poseM(2)).^2);
+    end
+    disp('total distance travelled:');
+    disp(totalDist);
+    %%%%%%%%%%%%%%%%%%%
+    
+   %% Visualize mapping step
+    % ------------------
+    % --- Visualize mapping step
+    % ------------------
+    cla(myHandles.mainPlotWindow);
+    if dispmode >= 1,
+        %contour(myHandles.mainPlotWindow,peaks(35));
+        %clf;
+        %cla(myHandles.mainPlotWindow);
+        axes(myHandles.mainPlotWindow);
+        hold(myHandles.mainPlotWindow,'on');
+        
+        %myHandles.mainPlotWindow()
+        %figure(2);clf;hold on;
+        
+        
+        set(gca,'Box','On'); axis equal;
+        title(['Global map at step ',int2str(istep),'. Total distance: ',num2str(totalDist,3),' m'])
+        draw(G,1,1,0,'k');
+        if isfield(myParams,'axisvec');
+            axis(myParams.axisvec);
+        end;
+        if (dispmode == 2) | (dispmode == 4),
+            pause;
+        end;
+    end;
+    % try new unknown area detection function
+    newDetect=0;
+    if newDetect
+       getUnknownAreasBeacons(G,myHandles,navData.robotPath);
+    end
+    
+    
+    drawnow; % keep the GUI active   
+         
+
+    
+    %plot robot path
+    if dispmode >= 1,        
+        for i=1:1:size( navData.robotPath,1 )-1
+            plot([navData.robotPath(i,1) navData.robotPath(i+1,1)],[navData.robotPath(i,2) navData.robotPath(i+1,2)],'g','LineWidth',1);
+            plot( navData.robotPath(i,1),navData.robotPath(i,2),'kx','LineWidth',2,'MarkerSize',5);
+        end;
+    end;
+    
+    %%%%% -Navigation- %%%%%
+    if( myParams.navigation==1),
+        [navError,myState,myBackTrackPoint,myAllBackTrackPoints,mySTARTbackTrackPoint,myBackTrackPointAtGap,myHeading]=...
+            leftWallFollowerToBackTracker2(G,myNewpose,myCon,navData,gaps);
+        navData.state=myState; 
+        navData.backTrackPoint=myBackTrackPoint;
+        navData.STARTbackTrackPoint=mySTARTbackTrackPoint;        
+        navData.allBackTrackPoints=myAllBackTrackPoints;
+        navData.backTrackPointAtGap=myBackTrackPointAtGap;
+        navData.lastHeading=myHeading;
+        if(navError)
+            warning 'Navigation error';
+        end;
+          
+    elseif( myParams.navigation==2)
+
+    end;%end navigation
+    drawnow;
+    
+    istep=istep+1;
+    
+end;% end main while loop

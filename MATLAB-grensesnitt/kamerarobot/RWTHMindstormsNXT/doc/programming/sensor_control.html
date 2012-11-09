@@ -1,0 +1,245 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>High level sensor control</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="sensor_control">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>High level sensor control</h1>
+         <introduction>
+            <p>In this section we've got:</p>
+         </introduction>
+         <div>
+            <ul>
+               <li><tt>OpenSwitch</tt></li>
+               <li><tt>GetSwitch</tt></li>
+               <li><tt>OpenSound</tt></li>
+               <li><tt>GetSound</tt></li>
+               <li><tt>OpenLight</tt></li>
+               <li><tt>GetLight</tt></li>
+               <li><tt>OpenUltrasonic</tt></li>
+               <li><tt>GetUltrasonic</tt></li>
+               <li><tt>CloseSensor</tt></li>
+            </ul>
+         </div>
+         <p>For these functions please refer to the function manual:</p>
+         <div>
+            <ul>
+               <li><tt>USMakeSnapshot</tt></li>
+               <li><tt>USGetSnapshotResults</tt></li>
+               <li><tt>OpenAccelerator</tt></li>
+               <li><tt>GetAccelerator</tt></li>
+               <li><tt>OpenInfrared</tt></li>
+               <li><tt>GetInfrared</tt></li>
+            </ul>
+         </div>
+         <p>The functions mentioned above provide an easy and simple way to access all sensors. The ultrasonic sensor uses a digital interface
+            and has to be handled in a different way internally, but using these high level functions, you won't see a difference. The
+            only thing worth mentioning: <tt>GetUltrasonic</tt> is about 1.5 up to 2 times slower than the other <tt>Get*</tt> functions (because internally 3 or sometimes 4 packets are needed instead of just 2).
+         </p>
+         <p>The <tt>Open*</tt> functions use <tt>NXT_SetInputMode</tt>, while <tt>Get*</tt> calls <tt>NXT_GetInputValues</tt>. <tt>CloseSensor</tt> is necessary to turn off a specific sensor, e.g. turn off the light sensor's red LED in active mode. This will save power.
+         </p>
+         <p>You can use raw port numbers starting with 0 just as seen in the official Mindstorms documentation, or you can use the named
+            constants <tt>SENSOR_1</tt> to <tt>SENSOR_4</tt> for better readability. So let's open a few sensors:
+         </p><pre class="codeinput">OpenSwitch(SENSOR_1);
+OpenSound(SENSOR_2, <span class="string">'DB'</span>);     <span class="comment">% have to specify mode, DB or DBA</span>
+OpenLight(SENSOR_3, <span class="string">'ACTIVE'</span>); <span class="comment">% have to specify mode, ACTIVE or INACTIVE</span>
+OpenUltrasonic(SENSOR_4);
+</pre><p>Sensors are ready to be used now, very easy:</p><pre class="codeinput"><span class="keyword">if</span> GetSwitch(SENSOR_1) <span class="comment">% always specify port number!</span>
+    <span class="comment">% the touch sensor is "pressed" now, do something</span>
+<span class="keyword">end</span><span class="comment">%if</span>
+
+<span class="keyword">if</span> GetSound(SENSOR_2) &lt; 100 <span class="comment">% remember, values range from 0 to 1023</span>
+    <span class="comment">% quite silent right now</span>
+<span class="keyword">end</span><span class="comment">%if</span>
+
+<span class="keyword">if</span> GetLight(SENSOR_3) &gt; 1000
+    <span class="comment">% VERY bright sunshine :-)</span>
+<span class="keyword">end</span><span class="comment">%if</span>
+
+<span class="keyword">if</span> GetUltrasonic(SENSOR_4) &lt; 30 <span class="comment">% unit is cm</span>
+    <span class="comment">% we seem close to a wall</span>
+<span class="keyword">end</span><span class="comment">%if</span>
+</pre><p>Note that it is possible to use <tt>NXT_SetInputMode</tt> with a custom mode you like instead of <tt>Open*</tt>, and the <tt>Get</tt>-functions will still work (this is not true for the ultrasonic sensor, but it has totally different modes anyway). Internally
+            they just return the <tt>.NormalizedADVal</tt> value. This makes it possible to automatically count claps and still use the simple functions. Example:
+         </p><pre class="codeinput"><span class="comment">% your old code looks like this</span>
+OpenSound(SENSOR_2, <span class="string">'DB'</span>);
+<span class="comment">% do something</span>
+
+<span class="keyword">while</span>(something)
+    <span class="comment">% note how you continously have to poll the sensor</span>
+    <span class="keyword">if</span> GetSound(SENSOR_2) &gt; 700
+        ClapCount = ClapCount + 1;
+    <span class="keyword">end</span><span class="comment">%if</span>
+<span class="keyword">end</span><span class="comment">%while</span>
+</pre><pre class="codeinput"><span class="comment">% now replace OpenSound by this</span>
+NXT_SetInputMode(SENSOR_2, <span class="string">'SOUND_DB'</span>, <span class="string">'PERIODCOUNTERMODE'</span>, <span class="string">'dontreply'</span>);
+NXT_ResetInputScaledValue(SENSOR_2); <span class="comment">% this is needed if you want to start with 0</span>
+
+<span class="keyword">if</span> GetSound(SENSOR_2) &gt; 500 <span class="comment">% GetSound still works!</span>
+    <span class="comment">% hey, this is a loud atmosphere...</span>
+<span class="keyword">end</span><span class="comment">%if</span>
+
+<span class="comment">% we could do whatever we wanted here:</span>
+pause(10) <span class="comment">% take a little 10s nap</span>
+
+data = NXT_GetInputValues(SENSOR_2);
+ClapCount = data.ScaledVal;
+</pre><p>That was easy. The NXT did the counting for us. For more details about sensor modes see the LEGO documentation, but in a few
+            words: A "transition" (<tt>TRANSITIONCNTMODE</tt>) is whenever the value (<tt>.NormalizedADVal</tt>) changes between the 45% threshold (45% of 1023 is 460). As "period" (<tt>PERIODCOUNTERMODE</tt>) counts when the value goes down from somewhere above 45%, and then changes back up. The "count" happens during the raising
+            part. To see what exactly is happening try the <tt>GUI_WatchAnalogSensor</tt> tool.
+         </p>
+         <p>The main point I wanted to make: As you can see, <tt>GetSound</tt> / <tt>GetLight</tt> etc. can peacefully coexist with the <tt>NXT_</tt> functions.
+         </p>
+         <p>Clean up when you are done!</p><pre class="codeinput"><span class="comment">% don't forget :-)</span>
+CloseSensor(SENSOR_1);
+CloseSensor(SENSOR_2);
+CloseSensor(SENSOR_3);
+CloseSensor(SENSOR_4);
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% High level sensor control
+% In this section we've got:
+
+%%
+% * |OpenSwitch|
+% * |GetSwitch|
+% * |OpenSound|
+% * |GetSound|
+% * |OpenLight|
+% * |GetLight|
+% * |OpenUltrasonic|
+% * |GetUltrasonic|
+% * |CloseSensor|
+
+%%
+% For these functions please refer to the function manual:
+
+%%
+% * |USMakeSnapshot|
+% * |USGetSnapshotResults|
+% * |OpenAccelerator|
+% * |GetAccelerator|
+% * |OpenInfrared|
+% * |GetInfrared|
+
+%%
+% The functions mentioned above provide an easy and simple way to access
+% all sensors. The ultrasonic sensor uses a digital interface and 
+% has to be handled in a different way internally, but using these high
+% level functions, you won't see a difference. The only thing worth
+% mentioning: |GetUltrasonic| is about 1.5 up to 2 times slower than the
+% other |Get*| functions (because internally 3 or sometimes 4 packets are
+% needed instead of just 2).
+%
+% The |Open*| functions use |NXT_SetInputMode|, while |Get*|
+% calls |NXT_GetInputValues|. |CloseSensor| is necessary to turn off a
+% specific sensor, e.g. turn off the light sensor's red LED in active mode.
+% This will save power.
+%
+% You can use raw port numbers starting with 0 just as seen in the official Mindstorms
+% documentation, or you can use the named constants |SENSOR_1| to |SENSOR_4| for better
+% readability. So let's open a few sensors:
+
+OpenSwitch(SENSOR_1);
+OpenSound(SENSOR_2, 'DB');     % have to specify mode, DB or DBA
+OpenLight(SENSOR_3, 'ACTIVE'); % have to specify mode, ACTIVE or INACTIVE
+OpenUltrasonic(SENSOR_4);
+
+%%
+% Sensors are ready to be used now, very easy:
+
+if GetSwitch(SENSOR_1) % always specify port number!
+    % the touch sensor is "pressed" now, do something
+end%if
+
+if GetSound(SENSOR_2) < 100 % remember, values range from 0 to 1023
+    % quite silent right now
+end%if    
+
+if GetLight(SENSOR_3) > 1000
+    % VERY bright sunshine :-)
+end%if
+
+if GetUltrasonic(SENSOR_4) < 30 % unit is cm
+    % we seem close to a wall
+end%if
+
+%%
+% Note that it is possible to use |NXT_SetInputMode| with a custom mode you
+% like instead of |Open*|, and the |Get|-functions will still work (this is
+% not true for the ultrasonic sensor, but it has totally different modes 
+% anyway).
+% Internally they just return the |.NormalizedADVal| value. This makes it
+% possible to automatically count claps and still use the simple
+% functions. Example:
+
+% your old code looks like this
+OpenSound(SENSOR_2, 'DB');  
+% do something
+
+while(something)
+    % note how you continously have to poll the sensor
+    if GetSound(SENSOR_2) > 700
+        ClapCount = ClapCount + 1;
+    end%if
+end%while
+
+%%
+
+% now replace OpenSound by this
+NXT_SetInputMode(SENSOR_2, 'SOUND_DB', 'PERIODCOUNTERMODE', 'dontreply');
+NXT_ResetInputScaledValue(SENSOR_2); % this is needed if you want to start with 0
+
+if GetSound(SENSOR_2) > 500 % GetSound still works!
+    % hey, this is a loud atmosphere...
+end%if
+
+% we could do whatever we wanted here:
+pause(10) % take a little 10s nap
+
+data = NXT_GetInputValues(SENSOR_2);
+ClapCount = data.ScaledVal;
+
+%%
+% That was easy. The NXT did the counting for us. For more details about
+% sensor modes see the LEGO documentation, but in a few words: A
+% "transition" (|TRANSITIONCNTMODE|) is whenever the value (|.NormalizedADVal|)
+% changes between the 45% threshold (45% of 1023 is 460). As "period"
+% (|PERIODCOUNTERMODE|) counts when the value goes down from somewhere above
+% 45%, and then changes back up. The "count" happens during the raising
+% part. To see what exactly is happening try the |GUI_WatchAnalogSensor|
+% tool.
+%
+% The main point I wanted to make: As you can see, |GetSound| / |GetLight|
+% etc. can peacefully coexist with the |NXT_| functions.
+
+%%
+% Clean up when you are done!
+
+% don't forget :-)
+CloseSensor(SENSOR_1);
+CloseSensor(SENSOR_2);
+CloseSensor(SENSOR_3);
+CloseSensor(SENSOR_4);
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

@@ -1,0 +1,151 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>GetMotorSettings</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_GetMotorSettings">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>GetMotorSettings</h1>
+         <introduction>
+            <p>Returns the current motor data / settings (e.g. position, speed, etc.) from the specified motor</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#5">Description</a></li>
+               <li><a href="#19">Example</a></li>
+               <li><a href="#21">See also</a></li>
+               <li><a href="#23">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>data = GetMotorSettings(port)</tt></p>
+         <p><tt>data = GetMotorSettings(port, handle)</tt></p>
+         <h2>Description<a name="5"></a></h2>
+         <p><tt>data = GetMotorSettings(port)</tt> returns the current motor data / settings of the given motor <tt>port</tt>. The value <tt>port</tt> can be addressed by the symbolic constants <tt>MOTOR_A</tt> , <tt>MOTOR_B</tt> and <tt>MOTOR_C</tt> analog to the labeling on the NXT Brick. The return value <tt>data</tt> is a struct variable. It contains several motor settings and information.
+         </p>
+         <p>The last optional argument can be a valid NXT handle. If none is specified, the default handle will be used (call <tt>COM_SetDefaultNXT</tt> to set one).
+         </p>
+         <p><b>Output:</b></p>
+         <p><tt>data.IsRunning</tt>         % boolean, true if the motor "does something"
+         </p>
+         <p><tt>data.Power</tt>             % current power
+         </p>
+         <p><tt>data.AngleLimit</tt>        % current set angle limit, 0 means none set
+         </p>
+         <p><tt>data.TurnRatio</tt>         % current turn ratio
+         </p>
+         <p><tt>data.SpeedRegulation</tt>   % boolean, speed regulated or not?
+         </p>
+         <p><tt>data.SyncToMotor</tt>       % the motor this one is synced to. -1 means not synced
+         </p>
+         <p><tt>data.TachoCount</tt>        % internal, non-resettable rotation-counter (in degrees)
+         </p>
+         <p><tt>data.Angle</tt>             % current motor position, resettable using, <tt>ResetMotorAngle</tt></p>
+         <p><tt>data.MotorBrake</tt>        % boolean, is electronic braking enabled?
+         </p>
+         <h2>Example<a name="19"></a></h2><pre class="codeinput">   SetMotor(MOTOR_C);
+   	SetPower(67);
+   	SetAngleLimit(240);
+   	SpeedRegulation(<span class="string">'on'</span>);
+   SendMotorSettings();
+
+   WaitForMotor(MOTOR_C);
+
+   data = GetMotorSettings(MOTOR_C);
+</pre><h2>See also<a name="21"></a></h2>
+         <p><a href="SendMotorSettings.html">SendMotorSettings</a>, <a href="ResetMotorAngle.html">ResetMotorAngle</a></p>
+         <h2>Signature<a name="23"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% GetMotorSettings
+% Returns the current motor data / settings (e.g. position, speed, etc.) from the specified motor
+%%
+%% Syntax
+% |data = GetMotorSettings(port)|
+%%
+% |data = GetMotorSettings(port, handle)|
+%%
+%% Description
+% |data = GetMotorSettings(port)| returns the current motor data / settings of the given motor
+% |port|. The value |port| can be addressed by the symbolic constants |MOTOR_A| , |MOTOR_B| and
+% |MOTOR_C| analog to the labeling on the NXT Brick. The return value |data| is a struct variable.
+% It contains several motor settings and information.
+%%
+% The last optional argument can be a valid NXT handle. If none is
+% specified, the default handle will be used (call |COM_SetDefaultNXT| to
+% set one).
+%%
+%%
+% *Output:*
+%%
+% |data.IsRunning|         % boolean, true if the motor "does something"
+%%
+% |data.Power|             % current power
+%%
+% |data.AngleLimit|        % current set angle limit, 0 means none set
+%%
+% |data.TurnRatio|         % current turn ratio
+%%
+% |data.SpeedRegulation|   % boolean, speed regulated or not?
+%%
+% |data.SyncToMotor|       % the motor this one is synced to. -1 means not synced
+%%
+% |data.TachoCount|        % internal, non-resettable rotation-counter (in degrees)
+%%
+% |data.Angle|             % current motor position, resettable using, |ResetMotorAngle|
+%%
+% |data.MotorBrake|        % boolean, is electronic braking enabled?
+%%
+%% Example
+   SetMotor(MOTOR_C);
+   	SetPower(67);
+   	SetAngleLimit(240);
+   	SpeedRegulation('on');
+   SendMotorSettings();
+
+   WaitForMotor(MOTOR_C);
+
+   data = GetMotorSettings(MOTOR_C);
+%%
+%% See also
+% SendMotorSettings, ResetMotorAngle
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

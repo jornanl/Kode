@@ -1,0 +1,68 @@
+function [P, G]=GtoPconv(Gin,percRad)
+% extract a perception map P from global map G based on robotposition and
+% range of sensors
+% 
+rad=str2double(get(percRad,'String'));
+PERCRAD=rad;
+%PERCRAD=0.6;
+
+% Get data from Gin
+Xin  = get(Gin,'x');  
+Cin  = get(Gin,'c');
+
+% Get robot and its pose
+r  = getrobot(Gin); 
+xr = get(r,'x');
+%Cr = get(r,'C');
+
+% init new map P
+P = map('perception map',0);
+
+X=Xin;
+C=Cin;
+
+% add robot object to P and remove it from Gin
+P=addentity(P,r);
+X(1)=[];
+
+
+n  = length(X); % number of features in Gin
+
+% if features in Gin, extract features located inside radius and store them in P. Also
+% remove features inside radius from Gin
+if n>0,
+    for i = 1:n,
+        xyFeature(1:2,i)=get(X{i},'x'); % xyFeature=[2x1] contains (x,y) values of all beacons in G 
+    end
+    
+    % finding beacons inside perception radius
+    distVector=sqrt((xyFeature(1,1:n)-xr(1)).^2 + (xyFeature(2,1:n)-xr(2)).^2);
+    insideIndex = find(distVector<=PERCRAD);
+    outsideIndex = find(distVector>PERCRAD);
+
+    % delete features outside radius
+    Xinside=X;
+    Xinside(outsideIndex(1:end))=[];
+
+    % add features inside radius to P
+    for i=1:length(Xinside)
+        P=addentity(P,Xinside{i});
+    end
+
+
+    % delete features inside radius
+    Xoutside=X;
+    Xoutside(insideIndex(1:end))=[];
+
+    %update covarians matrix 
+    C(insideIndex(1:end),:)=[];
+    C(:,insideIndex(1:end))=[];
+    
+    % update Gin and produce output G
+    Gin=set(Gin,'x',Xoutside,'c',C);
+    G=Gin;
+
+
+else
+    G=Gin;
+end

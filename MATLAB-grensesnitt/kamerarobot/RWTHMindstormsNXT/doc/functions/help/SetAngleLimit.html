@@ -1,0 +1,111 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>SetAngleLimit</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_SetAngleLimit">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>SetAngleLimit</h1>
+         <introduction>
+            <p>Sets the angle limit (in degrees) of the current motor port</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#4">Description</a></li>
+               <li><a href="#10">Example</a></li>
+               <li><a href="#12">See also</a></li>
+               <li><a href="#14">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>SetAngleLimit(limt)</tt></p>
+         <h2>Description<a name="4"></a></h2>
+         <p><tt>SetAngleLimit(limt)</tt> sets the angle <tt>limit</tt> in degrees for the current motor, which is set by function <tt>SetMotor</tt>. This setting takes only affect with the next <tt>SendMotorSettings</tt> command.
+         </p>
+         <p>Use <tt>SetAngleLimit(0)</tt> to deactivate this limit (hence the motor will run forever).
+         </p>
+         <p><b>Note:</b></p>
+         <p>This commmand provides an automatically limited motor rotation. The NXT Brick will try to rotate only to the angle which is
+            set. Unfortunately if the power is set too high, the target angle will be slightly missed, as the motor has still enough angular
+            momentum to keep spinning a bit. Ways around can be to slow down the motor before it approaches its angle limit and then keep
+            going very carefully, or to willingly miss the angle limit and then reverse back to where you want to go precisely.
+         </p>
+         <h2>Example<a name="10"></a></h2><pre class="codeinput">   SetMotor(MOTOR_B);
+   	SetPower(76);
+   	SetAngleLimit(720);
+   SendMotorSettings();
+</pre><h2>See also<a name="12"></a></h2>
+         <p><a href="SendMotorSettings.html">SendMotorSettings</a>, <a href="SetMotor.html">SetMotor</a>, <a href="GetMotor.html">GetMotor</a></p>
+         <h2>Signature<a name="14"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% SetAngleLimit
+% Sets the angle limit (in degrees) of the current motor port
+%%
+%% Syntax
+% |SetAngleLimit(limt)|
+%%
+%% Description
+% |SetAngleLimit(limt)| sets the angle |limit| in degrees for the current motor, which is set by
+% function |SetMotor|. This setting takes only affect with the next |SendMotorSettings| command.
+%%
+% Use |SetAngleLimit(0)| to deactivate this limit (hence the motor will run forever).
+%%
+%%
+% *Note:*
+%%
+% This commmand provides an automatically limited motor rotation. The NXT Brick will try to rotate
+% only to the angle which is set. Unfortunately if the power is set too high, the target angle
+% will be slightly missed, as the motor has still enough angular momentum to keep spinning a bit.
+% Ways around can be to slow down the motor before it approaches its angle limit and then keep
+% going very carefully, or to willingly miss the angle limit and then reverse back to where you
+% want to go precisely.
+%%
+%% Example
+   SetMotor(MOTOR_B);
+   	SetPower(76);
+   	SetAngleLimit(720);
+   SendMotorSettings();
+%%
+%% See also
+% SendMotorSettings, SetMotor, GetMotor
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

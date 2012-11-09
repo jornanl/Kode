@@ -1,0 +1,14 @@
+function [error]=setRadarAngle(myCon,radarAngle,andles)
+
+error=1;
+
+
+if strcmp(myCon,'simulator'),
+    simRobot(strcat('r',radarAngle),myHandles);
+    error=0;
+        
+else
+    if( serialAsyncWrite( myCon,strcat('r',radarAngle) ) ),
+        set(myHandles.statusText,'String','Failed setting radar. Unable to send serial data' );
+    end
+end

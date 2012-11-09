@@ -1,0 +1,137 @@
+function c=gapFinder2( gMap )
+
+globalMap = get(gMap,'x'); %
+gapPonits=[];
+numGaps = 0;
+
+for i=2:length(globalMap)
+    points  = get(globalMap{1,i},'ss');
+    nums = size(points,2);
+    
+    if( mod(nums,4) == 0 )
+        if( nums > 4)
+            alphaRad= get(globalMap{1,i},'x' );
+            angle = alphaRad(1);            
+            kvasiRotationMatrix=[sin(-angle) cos(-angle)];
+            
+            counter=1;
+            yVal =[];
+            for p=1:4:nums            
+                yVal(counter)= kvasiRotationMatrix*points(p:p+1)';
+                yVal(counter+1)= kvasiRotationMatrix*points(p+2:p+3)';
+                counter=counter+2;
+            end;
+            
+            [sorted,ind]=sort(yVal);
+
+            if( mod(numel(ind),2) == 0 )            
+                for m=2:2:numel(ind)-1                    
+                     numGaps = numGaps+1;
+                     gapPonits(numGaps,m*2-3:1:m*2-2)=points(ind(m)*2-1:ind(m)*2);
+                     gapPonits(numGaps,m*2-1:1:m*2  )=points(ind(m+1)*2-1:ind(m+1)*2);                   
+                end;
+            else
+                disp('gapFinder error 2')
+            end;
+        end;
+    else
+        disp('gapFinder error 1')
+    end;
+end;
+%added by Trond M
+segs=[];
+for i = 2:length(globalMap),
+    alphaRad=get(globalMap{1,i},'x');
+    alpha=alphaRad(1); radius=alphaRad(2);
+    beginEndLines(i-1,1) = radius*cos(alpha) - 30*sin(alpha);
+    beginEndLines(i-1,2) = radius*sin(alpha) + 30*cos(alpha);
+    beginEndLines(i-1,3) = radius*cos(alpha) + 30*sin(alpha);
+    beginEndLines(i-1,4) = radius*sin(alpha) - 30*cos(alpha);
+end;
+numberOfLines=size(beginEndLines,1);
+
+for i=1:numberOfLines-1, % for all lines except the last one 
+    for j=i+1:1:numberOfLines, 
+        %intersect lines i and j?
+        vectA=[ beginEndLines(i,1) beginEndLines(i,2) beginEndLines(i,3) beginEndLines(i,4) ];
+        vectB=[ beginEndLines(j,1) beginEndLines(j,2) beginEndLines(j,3) beginEndLines(j,4) ];
+        
+           
+        [intersect intersectX intersectY] = vectorCrossingChecker(vectA,vectB); 
+        %returns 1=true eller 2=false + intersection coordinates
+        
+        
+        
+        if intersect==1, % line i and j do intersect
+            
+            segments_i  = get(globalMap{1,i+1},'ss');
+            for k=1:4:size(segments_i,2);, % for all segments in line i
+                segs(k,1:4,i)=segments_i(k:k+3); %copying start and end-points of segment k into segs
+                
+                % checking if the intersection is in segment k of line i 
+                if (intersectX < segs(k,1,i) & intersectX < segs(k,3,i) ) |...
+                    (intersectX > segs(k,1,i) & intersectX > segs(k,3,i) ) |...
+                    (intersectY < segs(k,2,i) & intersectY < segs(k,4,i))...
+                    (intersectY > segs(k,2,i) & intersectY > segs(k,4,i))...
+                    disp('intersection is not in segment k of line i')
+                    continue;
+                
+                if (segs(k,1,i) < segs(k,3,i) )
+                    if (segs(k,1,i) < intersectX & intersectX < segs(k,3,i) )
+                        disp('gap 1')
+                    end
+                elseif (segs(k,3,i) < segs(k,1,i) )
+                    if (segs(k,3,i) < intersectX & intersectX < segs(k,1,i) )
+                        disp('gap 1')
+                    end
+                elseif (segs(k,3,i) == segs(k,1,i) )
+                    
+                    if (segs(k,2,i) < segs(k,4,i) )
+                        if (segs(k,2,i) < intersectY & intersectY < segs(k,4,i) )
+                            disp('gap 1')
+                        end
+                    elseif (segs(k,4,i) < segs(k,2,i) )
+                        if (segs(k,4,i) < intersectY & intersectY < segs(k,2,i) )
+                            disp('gap 1')
+                        end
+                    end
+                end
+            end
+                
+           
+            segments_j  = get(globalMap{1,j+1},'ss');
+            for k=1:4:size(segments_j,2);, % for all segments in line j
+                segs(k,1:4,j)=segments_j(k:k+3); %copying start and end-points of segment k into segs
+                
+                % checking if the intersection is in segment k of line j
+               if (segs(k,1,j) < segs(k,3,j) )
+                    if (segs(k,1,j) < intersectX & intersectX < segs(k,3,j) )
+                        disp('gap 2')
+                    end
+                elseif (segs(k,3,j) < segs(k,1,j) )
+                    if (segs(k,3,j) < intersectX & intersectX < segs(k,1,j) )
+                        disp('gap 2')
+                    end
+                elseif (segs(k,3,j) == segs(k,1,j) )
+                    
+                    if (segs(k,2,j) < segs(k,4,j) )
+                        if (segs(k,2,j) < intersectY & intersectY < segs(k,4,j) )
+                            disp('gap 2')
+                        end
+                    elseif (segs(k,4,j) < segs(k,2,j) )
+                        if (segs(k,4,j) < intersectY & intersectY < segs(k,2,j) )
+                            disp('gap 2')
+                        end
+                    end
+                end
+            end
+        else
+            disp('no intersection between line i and j');
+            
+        end
+            
+    end
+end
+
+c = gapPonits;
+%

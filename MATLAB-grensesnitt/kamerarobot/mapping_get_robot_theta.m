@@ -1,0 +1,20 @@
+function theta = mapping_get_robot_theta(movement)
+
+angle = 0;
+len = size(movement);
+
+rad_const = pi/180;
+
+for i=1:len(2)
+    if(strcmp('rot',movement(i).action))    
+        angle = angle + movement(i).value;
+    end
+end
+
+i = floor(angle/360); %number of complete rotations
+
+angle = angle - (i*360); %positive angle between 0 and 360 degrees
+
+theta = angle*rad_const; %always positive 0-2*pi
+
+end

@@ -1,0 +1,123 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>SetTurnRatio</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_SetTurnRatio">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>SetTurnRatio</h1>
+         <introduction>
+            <p>Sets the turn ratio of the current active motor</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#4">Description</a></li>
+               <li><a href="#10">Example</a></li>
+               <li><a href="#12">See also</a></li>
+               <li><a href="#14">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>SetTurnRatio(ratio)</tt></p>
+         <h2>Description<a name="4"></a></h2>
+         <p><tt>SetTurnRatio(ratio)</tt> sets the turn <tt>ratio</tt> of the current active motor which can be controlled by <tt>SendMotorSettings</tt>. The value <tt>ratio</tt> has to be wihtin the Integer interval <tt>-100...100</tt>. The value specifies the ratio of power distribution between two motors (e.g. left and right wheel of the robot). The <tt>ratio</tt> setting takes only affect with the next <tt>SendMotorSettings</tt> command and if two motors are synchronied with <tt>SyncToMotor</tt>.
+         </p>
+         <p>According to the LEGO Mindstorms communication protocol documentation, a ratio of 0 means equal power to both motors. Set
+            50 if you want one wheel spinning and the other stopped. Turn ratio of 100 will turn one wheel in the opposite direction (i.e.
+            reverse) and the other forward, hence giving the maximum "turn around on the spot" effect. Set values between 1 and 49 to
+            get nice curves or circles driven by your robot.
+         </p>
+         <p><b>Note:</b></p>
+         <p>When using several motor commands with <tt>SyncToMotor</tt> statements, unexpected behaviour can occur, due to the NXTs internal error correction counters. Sometimes it can help to
+            issue the commands <tt>NXT_ResetMotorPosition(port, true)</tt>, <tt>NXT_ResetMotorPosition(port, false)</tt> and <tt>StopMotor(port, 'off')</tt> for each of both motors. Although this seems like a waste of packets, this can do the trick, especially when working with
+            certain turn ratios.
+         </p>
+         <h2>Example<a name="10"></a></h2><pre class="codeinput">   SetMotor(MOTOR_B);
+   	SyncToMotor(MOTOR_A);
+   	SetPower(76);
+   	SetTurnRatio(50);
+   SendMotorSettings();
+</pre><h2>See also<a name="12"></a></h2>
+         <p><a href="SendMotorSettings.html">SendMotorSettings</a>, <a href="SyncToMotor.html">SyncToMotor</a>, <a href="SetMotor.html">SetMotor</a>, <a href="SetPower.html">SetPower</a></p>
+         <h2>Signature<a name="14"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% SetTurnRatio
+% Sets the turn ratio of the current active motor
+%%
+%% Syntax
+% |SetTurnRatio(ratio)|
+%%
+%% Description
+% |SetTurnRatio(ratio)| sets the turn |ratio| of the current active motor which can be controlled
+% by |SendMotorSettings|. The value |ratio| has to be wihtin the Integer interval |-100...100|.
+% The value specifies the ratio of power distribution between two motors (e.g. left and right
+% wheel of the robot).
+% The |ratio| setting takes only affect with the next |SendMotorSettings| command and if two
+% motors are synchronied with |SyncToMotor|.
+%%
+% According to the LEGO Mindstorms communication protocol documentation, a ratio of 0 means equal
+% power to both motors. Set 50 if you want one wheel spinning and the other stopped. Turn ratio of
+% 100 will turn one wheel in the opposite direction (i.e. reverse) and the other forward, hence
+% giving the maximum "turn around on the spot" effect. Set values between 1 and 49 to get nice
+% curves or circles driven by your robot.
+%%
+%%
+% *Note:*
+%%
+% When using several motor commands with |SyncToMotor| statements,
+% unexpected behaviour can occur, due to the NXTs internal error correction counters.
+% Sometimes it can help to issue the commands |NXT_ResetMotorPosition(port, true)|,
+% |NXT_ResetMotorPosition(port, false)| and |StopMotor(port, 'off')| for each of both
+% motors. Although this seems like a waste of packets, this can do the trick, especially
+% when working with certain turn ratios.
+%%
+%% Example
+   SetMotor(MOTOR_B);
+   	SyncToMotor(MOTOR_A);
+   	SetPower(76);
+   	SetTurnRatio(50);
+   SendMotorSettings();
+%%
+%% See also
+% SendMotorSettings, SyncToMotor, SetMotor, SetPower
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

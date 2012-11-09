@@ -1,0 +1,308 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>PC - NXT Communication</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="pc_nxt_communication">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>PC - NXT Communication</h1>
+         <introduction>
+            <p><b>Note:</b> This article focuses on communication via Bluetooth, as known from Toolbox Version 1.00. With Version 2.00, USB communication
+               was introduced, but is not discussed in the following text. Please see the documentation of the according functions, with
+               more help and examples.
+            </p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#3">Bluetooth connections and serial handles</a></li>
+               <li><a href="#10">Sending and receiving data</a></li>
+            </ul>
+         </div>
+         <p>In this section we focus on:</p>
+         <div>
+            <ul>
+               <li><tt>COM_OpenNXT</tt></li>
+               <li><tt>COM_CloseNXT</tt></li>
+               <li><tt>COM_SetDefaultNXT</tt></li>
+               <li><tt>COM_GetDefaultNXT</tt></li>
+               <li><tt>COM_MakeBTConfigFile</tt></li>
+            </ul>
+         </div>
+         <h2>Bluetooth connections and serial handles<a name="3"></a></h2>
+         <p>To communicate with the NXT via bluetooth, we have to use the SPP (serial port profile), which basically works like a virtual
+            serial port. This is why we can send and receive data from within MATLAB through the serial port commands.
+         </p>
+         <p>To handle different connections or bluetooth adapters on different computers easily, a certain ini-file with settings for
+            the MATLAB functions must be present in the current directory (or one that can be found through path settings).
+         </p>
+         <p>The ini-file format looks like this</p><pre>[Bluetooth]</pre><pre>SerialPort=COM3
+BaudRate=57600
+DataBits=8</pre><pre>SendSendPause=10
+SendReceivePause=30</pre><pre>TimeOut=2</pre><p>The serial settings should be self explaining. Explanation of the send-pause-values will follow later on. The <tt>TimeOut</tt> parameter only has an effect when using Windows. It sets the period the bluetooth stack should wait when it is "missing data".
+            The MATLAB-internal default value of 10 causes annoying freezes in certain robot programs on certain computers (a direct cause
+            is not yet found). By setting 2 (the toolbox default value), one should get a fairly stable experience with very rare execution
+            pauses of 2 seconds. Smaller timeout values can lead to real packet loss which has not been examined yet.
+         </p>
+         <p>To create a bluetooth configuration ini-file, a standard editor can be used. A more comfortable way is to use the GUI-guided
+            program:
+         </p><pre class="codeinput">COM_MakeBTConfigFile;
+</pre><p>The following functions work under Windows as well as Linux, with one big exception: The returned handle will be a <tt>serial</tt> struct in Windows, but a simple scalar file handle in Linux. All the internal functions take care of this, but if you should
+            want to access fields like <tt>.BytesAvailable</tt> of the handle, you can only do so in Windows, i.e. you must check the operating system using <tt>if ispc</tt> to avoid errors in Linux.
+         </p>
+         <p>Now first have a look how to obtain a handle to a bluetooth connection.</p><pre class="codeinput"><span class="comment">% Before we open a handle, we clean up to avoid errors:</span>
+COM_CloseNXT(<span class="string">'all'</span>, <span class="string">'bluetooth.ini'</span>);
+
+<span class="comment">% This only closes all open serial ports matching the COM-port from the</span>
+<span class="comment">% ini-file. More drastical is to close all open COM-ports like this:</span>
+COM_CloseNXT(<span class="string">'all'</span>);
+</pre><p>Now we can open a connection. Make sure the bluetooth dongle is connected to the NXT brick (using the according software or
+            scripts) before calling this.
+         </p><pre class="codeinput">h = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+</pre><p>The optional argument <tt>'check'</tt> causes the function so send a keep-alive-packet and to wait for the answer before returning a valid handle. This is very
+            comfortable as it detects a malfunctioning / closed bluetooth connection before the execution of other program code.
+         </p>
+         <p>Set the global default handle, so that later on, whenever we're calling functions, we don't have to pass the handle every
+            time.
+         </p><pre class="codeinput">COM_SetDefaultNXT(h);
+
+<span class="comment">% This is self-explanatory</span>
+handle = COM_GetDefaultNXT;
+</pre><p>To close an open connection / handle, just call</p><pre class="codeinput">COM_CloseNXT(h);
+
+<span class="comment">% although this would also do the trick:</span>
+COM_CloseNXT(<span class="string">'all'</span>, <span class="string">'bluetooth.ini'</span>);
+</pre><h2>Sending and receiving data<a name="10"></a></h2>
+         <p>In this section we've got:</p>
+         <div>
+            <ul>
+               <li><tt>COM_CreatePacket</tt></li>
+               <li><tt>COM_SendPacket</tt></li>
+               <li><tt>COM_CollectPacket</tt></li>
+            </ul>
+         </div>
+         <p>These functions are very "low level" and you should usually not use them on your own, unless you're implementing new NXT functions.
+            All the already implemented NXT functions make use of these.
+         </p>
+         <p>First we've got</p><pre class="codeinput">packet = COM_CreatePacket(CommandType, Command, ReplyMode, ContentBytes);
+</pre><p>where ReplyMode either has to be 'reply' or 'dontreply', specifying wether we want an answer from the NXT or not. This command
+            essentially creates the binary data for a packet, taking care of payload size and similar things. For more details see inside
+            the "Bluetooth Engine Demo" file.
+         </p>
+         <p>Now it's getting interesting. We've got two functions to send and receive data respectively. Because the LEGO NXT brick has
+            a 30ms latency when switching from transmit to receive mode, we can expect a 60ms latency for a whole sensor reading request.
+         </p>
+         <p>Very important is that the NXT can apparently lose packets / commands, because the input buffer (or queue) is of limited size.
+            As we do not know any more details about this, the send and receive functions have the option to wait between subsequent send
+            operations (i.e. to be less "aggressive"). This is where the earlier mentioned settings from the ini file come in:
+         </p><pre>SendSendPause=10
+SendReceivePause=30</pre><p>In this case we demand a 10ms delay between two consecutive send operations. On the other hand, a 30ms pause is required between
+            each send and receive operation (and vice versa receive and send). This should give the NXT enough time so switch between
+            bluetooth transmission modes without loosing any packets.
+         </p>
+         <p>Note: The functions are "intelligent" and only pause execution if it is necessary. So if you only try to send a packet once
+            every second, you will not notice this automatic delay, as it is not required.
+         </p><pre class="codeinput"><span class="comment">% for this function, we always have to specify a valid serial port handle</span>
+COM_SendPacket(packet, handle);
+</pre><p>Receiving packets is as easy. Make sure you have requested one before you try to collect something.</p><pre class="codeinput">[type cmd statusbyte content] = COM_CollectPacket(handle);
+</pre><p>The statusbyte will be checked automatically by this function, and if it contains an error message, an according warning will
+            be issued. You can disable the automatic status byte check by calling <tt>COM_CollectPacket(handle, 'dontcheck')</tt>. There is really just one special situation where this is needed: <tt>NXT_LSGetStatus</tt> (see documentation and function code).
+         </p>
+         <p><tt>COM_CollectPacket</tt> exactly retrieves one packet from the internal receive buffer. It does so by checking the length of the packet (first two
+            bytes) and then only reads the amount of data that belongs to this specific packet. Be very careful though: If you call it
+            without previously requesting data, there will be nothing to collect, hence the function will return nothing after a timeout
+            or crash, depending on your bluetooth adapter. Even worse, under Linux it will block without the possibility to break until
+            you physically turn off the bluetooth device.
+         </p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% PC - NXT Communication
+% *Note:* This article focuses on communication via Bluetooth, as known
+% from Toolbox Version 1.00. With Version 2.00, USB communication was
+% introduced, but is not discussed in the following text. Please see the
+% documentation of the according functions, with more help and examples.
+
+
+%%
+% In this section we focus on:
+%%
+% * |COM_OpenNXT|
+% * |COM_CloseNXT|
+% * |COM_SetDefaultNXT|
+% * |COM_GetDefaultNXT|
+% * |COM_MakeBTConfigFile|
+
+
+%% Bluetooth connections and serial handles
+% To communicate with the NXT via bluetooth, we have to use the SPP (serial
+% port profile), which basically works like a virtual serial port. This is
+% why we can send and receive data from within MATLAB through the serial
+% port commands.
+%
+% To handle different connections or bluetooth adapters on different
+% computers easily, a certain ini-file with settings for the MATLAB functions must be
+% present in the current directory (or one that can be found through path settings).
+%
+% The ini-file format looks like this
+%%
+%  [Bluetooth]
+%  
+%  SerialPort=COM3
+%  BaudRate=57600
+%  DataBits=8
+%  
+%  SendSendPause=10
+%  SendReceivePause=30
+%  
+%  TimeOut=2
+%
+% The serial settings should be self explaining. Explanation of the
+% send-pause-values will follow later on. The |TimeOut| parameter only has
+% an effect when using Windows. It sets the period the bluetooth stack
+% should wait when it is "missing data". The MATLAB-internal default value
+% of 10 causes annoying freezes in certain robot programs on certain
+% computers (a direct cause is not yet found). By setting 2 (the toolbox default
+% value), one should get a fairly stable experience with very rare execution pauses of 2 
+% seconds. Smaller timeout values can lead to real packet loss which has
+% not been examined yet.
+%
+% To create a bluetooth configuration ini-file, a standard editor can be used.
+% A more comfortable way is to use the GUI-guided program:
+COM_MakeBTConfigFile;
+
+%%
+% The following functions work under Windows as well as Linux, with one big
+% exception: The returned handle will be a |serial| struct in Windows, but a
+% simple scalar file handle in Linux. All the internal functions take care
+% of this, but if you should want to access fields like |.BytesAvailable|
+% of the handle, you can only do so in Windows, i.e. you must check the
+% operating system using |if ispc| to avoid errors in Linux.
+%
+% Now first have a look how to obtain a handle to a bluetooth connection.
+
+% Before we open a handle, we clean up to avoid errors:
+COM_CloseNXT('all', 'bluetooth.ini');
+
+% This only closes all open serial ports matching the COM-port from the
+% ini-file. More drastical is to close all open COM-ports like this:
+COM_CloseNXT('all');
+
+%%
+% Now we can open a connection. Make sure the bluetooth dongle is connected
+% to the NXT brick (using the according software or scripts) before calling this.
+h = COM_OpenNXT('bluetooth.ini', 'check');
+%%
+% The optional argument |'check'| causes the function so send a
+% keep-alive-packet and to wait for the answer before returning a valid
+% handle. This is very comfortable as it detects a malfunctioning / closed
+% bluetooth connection before the execution of other program code.
+
+%%
+% Set the global default handle, so that later on, whenever we're calling
+% functions, we don't have to pass the handle every time.
+COM_SetDefaultNXT(h);
+
+% This is self-explanatory
+handle = COM_GetDefaultNXT;
+
+%%
+% To close an open connection / handle, just call
+COM_CloseNXT(h);
+
+% although this would also do the trick:
+COM_CloseNXT('all', 'bluetooth.ini');
+
+
+%% Sending and receiving data
+% In this section we've got:
+%%
+% * |COM_CreatePacket|
+% * |COM_SendPacket|
+% * |COM_CollectPacket|
+%%
+% These functions are very "low level" and you should usually not use them
+% on your own, unless you're implementing new NXT functions. All the
+% already implemented NXT functions make use of these.
+
+%%
+% First we've got
+packet = COM_CreatePacket(CommandType, Command, ReplyMode, ContentBytes);
+
+%%
+% where ReplyMode either has to be 'reply' or 'dontreply', specifying
+% wether we want an answer from the NXT or not. This command essentially
+% creates the binary data for a packet, taking care of payload size and
+% similar things.
+% For more details see inside the "Bluetooth Engine Demo" file.
+
+%%
+% Now it's getting interesting. We've got two functions to send and receive
+% data respectively. Because the LEGO NXT brick has a 30ms latency when
+% switching from transmit to receive mode, we can expect a 60ms latency for
+% a whole sensor reading request.
+%
+% Very important is that the NXT can apparently lose packets / commands,
+% because the input buffer (or queue) is of limited size. As we do not know
+% any more details about this, the send and receive functions have the option to
+% wait between subsequent send operations (i.e. to be less "aggressive").
+% This is where the earlier mentioned settings from the ini file come in:
+%%
+%  SendSendPause=10
+%  SendReceivePause=30
+%%
+% In this case we demand a 10ms delay between two consecutive send
+% operations. On the other hand, a 30ms pause is required between each send
+% and receive operation (and vice versa receive and send). This should give
+% the NXT enough time so switch between bluetooth transmission modes
+% without loosing any packets.
+%
+% Note: The functions are "intelligent" and only pause execution if it is
+% necessary. So if you only try to send a packet once every second, you
+% will not notice this automatic delay, as it is not required.
+
+% for this function, we always have to specify a valid serial port handle
+COM_SendPacket(packet, handle);
+
+%%
+% Receiving packets is as easy. Make sure you have requested one before you
+% try to collect something.
+[type cmd statusbyte content] = COM_CollectPacket(handle);
+
+%%
+% The statusbyte will be checked automatically by this function, and if it
+% contains an error message, an according warning will be issued. You can 
+% disable the automatic status byte check by calling
+% |COM_CollectPacket(handle, 'dontcheck')|. There is really just one special
+% situation where this is needed: |NXT_LSGetStatus| (see documentation and function
+% code).
+%
+% |COM_CollectPacket| exactly retrieves one packet from the internal receive buffer.
+% It does so by checking the length of the packet (first two bytes) and
+% then only reads the amount of data that belongs to this specific packet.
+% Be very careful though: If you call it without previously requesting
+% data, there will be nothing to collect, hence the function will return
+% nothing after a timeout or crash, depending on your bluetooth adapter.
+% Even worse, under Linux it will block without the possibility to break
+% until you physically turn off the bluetooth device.
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

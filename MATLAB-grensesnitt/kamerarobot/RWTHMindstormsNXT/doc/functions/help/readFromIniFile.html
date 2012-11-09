@@ -1,0 +1,138 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>readFromIniFile</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_readFromIniFile">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>readFromIniFile</h1>
+         <introduction>
+            <p>Reads parameters from a configuration file (usually *.ini)</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#4">Description</a></li>
+               <li><a href="#11">Examples:</a></li>
+               <li><a href="#17">See also</a></li>
+               <li><a href="#20">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>ret = readFromIniFile(AppName, KeyName, filename)</tt></p>
+         <h2>Description<a name="4"></a></h2>
+         <p>ret=readFromIniFile(AppName, KeyName, filename)</p>
+         <p>This function works like GetPrivateProfileString() from the Windows-API that is well known for reading ini-file data. The
+            parameters are:
+         </p>
+         <p>AppName  = Section name of the type [xxxx] KeyName  = Key name separated by an equal to sign, of the type abc = 123 filename
+            = ini file name to be used
+         </p>
+         <p>ret      = string (!) value of the key found, empty ('') if key was not found. Since it's a string, you have to convert to
+            integers / floats on your own.
+         </p>
+         <p>Note that AppName and KeyName are NOT case sensitive, and that whitespace between '=' and the value will be ignored (removed).</p>
+         <p>If the key or the AppName is not found, or if the inifile does not exist or could not be opened, '' will be returned (this
+            will also be returned when the key is empty).
+         </p>
+         <h2>Examples:<a name="11"></a></h2><pre class="codeinput">    <span class="comment">%a sample ini file (sample.ini) may have entries:</span>
+    <span class="comment">%</span>
+    <span class="comment">%   [XYZ]</span>
+    <span class="comment">%   abc=123</span>
+    <span class="comment">%   def=7</span>
+    <span class="comment">%   ; lines starting with a ; are comments</span>
+    <span class="comment">%   [ZZZ]</span>
+    <span class="comment">%   abc=890</span>
+</pre><pre class="codeinput"> readFromIniFile(<span class="string">'XYZ'</span>,<span class="string">'abc'</span>, <span class="string">'sample.ini'</span>) <span class="comment">% will return '123'</span>
+</pre><pre class="codeinput"> readFromIniFile(<span class="string">'ZZZ'</span>,<span class="string">'abc'</span>, <span class="string">'sample.ini'</span>) <span class="comment">% will return '890'</span>
+</pre><pre class="codeinput"> readFromIniFile(<span class="string">'XYZ'</span>,<span class="string">'def'</span>, <span class="string">'sample.ini'</span>) <span class="comment">% will return '7'</span>
+</pre><h2>See also<a name="17"></a></h2>
+
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2008/01/08
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% readFromIniFile
+% Reads parameters from a configuration file (usually *.ini)
+%%
+%% Syntax
+% |ret = readFromIniFile(AppName, KeyName, filename)|
+%%
+%% Description
+% ret=readFromIniFile(AppName, KeyName, filename)
+%%
+% This function works like GetPrivateProfileString() from the Windows-API
+% that is well known for reading ini-file data. The parameters are:
+%%
+% AppName  = Section name of the type [xxxx]
+% KeyName  = Key name separated by an equal to sign, of the type abc = 123
+% filename = ini file name to be used
+%%
+% ret      = string (!) value of the key found, empty ('') if key was not
+% found. Since it's a string, you have to convert to
+% integers / floats on your own.
+%%
+% Note that AppName and KeyName are NOT case sensitive, and that whitespace
+% between '=' and the value will be ignored (removed).
+%%
+% If the key or the AppName is not found, or if the inifile does not
+% exist or could not be opened, '' will be returned (this will also be
+% returned when the key is empty).
+%%
+%% Examples:
+    %a sample ini file (sample.ini) may have entries:
+    %
+    %   [XYZ]
+    %   abc=123
+    %   def=7
+    %   ; lines starting with a ; are comments
+    %   [ZZZ]
+    %   abc=890
+%%
+ readFromIniFile('XYZ','abc', 'sample.ini') % will return '123'
+%%
+ readFromIniFile('ZZZ','abc', 'sample.ini') % will return '890'
+%%
+ readFromIniFile('XYZ','def', 'sample.ini') % will return '7'
+%%
+%%
+%% See also
+%
+%%
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf (see AUTHORS)
+% * *Date:* 2008/01/08
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

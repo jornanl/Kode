@@ -1,0 +1,31 @@
+function [vertex_list_right vertex_list_left] = mapping_find_and_plot_vertex(cam_path, robot_movement,vertex_list_right,vertex_list_left, myHandles)
+
+rad_const = pi/180;
+
+[lines I rot_angel_motor rot_angel dist] = cam_point_distance(cam_path, myHandles);
+
+
+xy = mapping_get_robot_pos(robot_movement);
+
+rot_angel_motor = (-1*rot_angel_motor)*rad_const;
+
+vertex_x = sin(rot_angel_motor)*dist;
+vertex_y = cos(rot_angel_motor)*dist;
+
+vertex_x = vertex_x + xy(1);
+vertex_y = vertex_y + xy(2);
+
+%Added to detect sensor error (Sigurd Hannaas 2011)
+if(dist==-1)
+    disp('ULTRASONIC SENSOR ERROR (distance = -1): The vertex lists will just contain sin and cos () * -1');
+    return;
+end
+
+if(rot_angel_motor>=0)
+    vertex_list_right = [vertex_list_right; vertex_x vertex_y];
+end
+if(rot_angel_motor<0)
+    vertex_list_left = [vertex_list_left; vertex_x vertex_y];
+end
+
+end

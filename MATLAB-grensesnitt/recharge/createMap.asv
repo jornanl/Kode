@@ -1,0 +1,18 @@
+% function createMap(globalMap)
+%CREATEMAP Summary of this function goes here
+%   Detailed explanation goes here
+mapMatrix = [];
+for i=2:length(globalMap)        
+            startnstopp=get(globalMap{1,i},'ss');
+            for j=1:4:size(startnstopp,2)    
+                mapMatrix
+%                 plot([startnstopp(j) startnstopp(j+2)],[startnstopp(j+1) startnstopp(j+3)],'LineWidth',2.7,'Color',[1 0 0]);
+%                 plot( startnstopp(j),startnstopp(j+1),'kx','LineWidth',2,'MarkerSize',9);
+%                 plot( startnstopp(j+2),startnstopp(j+3),'kx','LineWidth',2,'MarkerSize',9);
+%                 endpoints=vertcat(endpoints,[startnstopp(j) startnstopp(j+1);startnstopp(j+2) startnstopp(j+3)]);
+            end;
+        end;
+
+
+% end
+

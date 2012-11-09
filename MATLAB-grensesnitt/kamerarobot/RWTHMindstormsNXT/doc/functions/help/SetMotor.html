@@ -1,0 +1,97 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>SetMotor</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_SetMotor">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>SetMotor</h1>
+         <introduction>
+            <p>Sets the current motor to use for motor setting commands</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#4">Description</a></li>
+               <li><a href="#7">Example</a></li>
+               <li><a href="#9">See also</a></li>
+               <li><a href="#11">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>SetMotor(port)</tt></p>
+         <h2>Description<a name="4"></a></h2>
+         <p><tt>SetMotor(port)</tt> sets the current motor on the given <tt>port</tt> as the current active motor which can be controlled by <tt>SendMotorSettings</tt>. Changing motor settings take only an effect on the active motor. The value <tt>port</tt> can be addressed by the symbolic constants <tt>MOTOR_A</tt> , <tt>MOTOR_B</tt> and <tt>MOTOR_C</tt> analog to the labeling on the NXT Brick.
+         </p>
+         <p>The current motor setting can be returned by function <tt>GetMotor</tt>.
+         </p>
+         <h2>Example<a name="7"></a></h2><pre class="codeinput">   SetMotor(MOTOR_C);
+   	SetPower(76);
+   	SetAngleLimit(720);
+   SendMotorSettings();
+</pre><h2>See also<a name="9"></a></h2>
+         <p><a href="GetMotor.html">GetMotor</a>, <a href="SendMotorSettings.html">SendMotorSettings</a>, <a href="MOTOR_A.html">MOTOR_A</a>, <a href="MOTOR_B.html">MOTOR_B</a>, <a href="MOTOR_C.html">MOTOR_C</a></p>
+         <h2>Signature<a name="11"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% SetMotor
+% Sets the current motor to use for motor setting commands
+%%
+%% Syntax
+% |SetMotor(port)|
+%%
+%% Description
+% |SetMotor(port)| sets the current motor on the given |port| as the current active motor which can be controlled
+% by |SendMotorSettings|. Changing motor settings take only an effect on the active motor. The
+% value |port| can be addressed by the symbolic constants |MOTOR_A| , |MOTOR_B| and |MOTOR_C|
+% analog to the labeling on the NXT Brick.
+%%
+% The current motor setting can be returned by function |GetMotor|.
+%%
+%% Example
+   SetMotor(MOTOR_C);
+   	SetPower(76);
+   	SetAngleLimit(720);
+   SendMotorSettings();
+%%
+%% See also
+% GetMotor, SendMotorSettings, MOTOR_A, MOTOR_B, MOTOR_C
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

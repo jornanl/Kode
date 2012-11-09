@@ -1,0 +1,105 @@
+function [vinkel movement] = nxt_turn_degrees_hax(dir,degree,movement)
+
+%på grunn av begrensingner i toolboxens begrensninger må rotasjon løses på
+%denne måte. Origninalt ville jeg bruke rotateAbs metoden for å få en
+%nøyaktig rotasjon, men der feiler metoden. I steden går jeg for en løsning
+%hvor jeg lar motoren gå i 2 sekunder før jeg finner ut hvor mange grader
+%roboten har rotert.
+
+ResetMotorAngle('MOTOR_B');
+ResetMotorAngle('MOTOR_C');
+
+gear = 2,1;
+rot_dist = gear*degree;
+
+if(dir == 0)
+    power = 20;
+end
+
+if(dir == 1)
+    power = -20;
+end
+
+SetMotor(MOTOR_B);
+
+SetPower(power);
+SendMotorSettings();
+
+SetMotor(MOTOR_C);
+
+SetPower(-power);
+SendMotorSettings();
+
+%pause(pause_time);
+
+if(dir==0)
+    while(1)
+        data_B = nxt_get_motor_info(MOTOR_B);
+        data_C = nxt_get_motor_info(MOTOR_C);
+        dist_B = data_B.Angle;
+        dist_C = data_C.Angle;
+        kalk = (abs(dist_B) + abs(dist_C))/2
+        if((abs(dist_B) + abs(dist_C))/2 >= rot_dist*0.8)
+            SetMotor(MOTOR_B);
+
+                SetPower(16);
+            SendMotorSettings();
+
+            SetMotor(MOTOR_C);
+
+                SetPower(-16);
+            SendMotorSettings();
+        end
+        if((abs(dist_B) + abs(dist_C))/2 >= rot_dist)
+             break;
+        end
+    
+    end
+end
+
+if(dir==1)
+    while(1)
+        data_C = nxt_get_motor_info(MOTOR_C);
+        data_B = nxt_get_motor_info(MOTOR_B);
+        dist_C = data_C.Angle;
+        dist_B = data_B.Angle;
+        kalk = (abs(dist_B) + abs(dist_C))/2
+        if((abs(dist_B) + abs(dist_C))/2 >= rot_dist*0.8)
+            SetMotor(MOTOR_B);
+
+                SetPower(-16);
+            SendMotorSettings();
+
+            SetMotor(MOTOR_C);
+
+                SetPower(16);
+            SendMotorSettings();
+        end
+        if((abs(dist_C) + abs(dist_B))/2 >= rot_dist)
+             break;
+        end
+    
+    end
+end
+
+
+
+nxt_stop();
+
+
+
+tot_rot = (abs(data_B.Angle) + abs(data_C.Angle))/2;
+
+vinkel = tot_rot/gear;
+
+move_size = size(movement);
+
+movement(move_size(2)+1).action ='rot';
+if (dir == 0)
+	movement(move_size(2)+1).value = vinkel;
+end
+if (dir == 1)
+	movement(move_size(2)+1).value = -vinkel;
+end
+
+end

@@ -1,0 +1,31 @@
+function waypoints = findingWaypoints(shortestPathVector,robotStartLoc)
+%FINDINGBREAKPOINT Summary of this function goes here
+%   Detailed explanation goes here
+
+%Inserting robot start location
+waypoints = [robotStartLoc(1) robotStartLoc(2)];
+x = shortestPathVector(:,1);
+y = shortestPathVector(:,2);
+%Limit value for concidered waypoints
+limit = 0.04;
+k=1;
+oldChange = [0 0];
+%Adding breakpoints from the shortest path route
+for i=1:1:(size(shortestPathVector,1)-1)
+    newChange = y(i+1)-y(i);
+    if abs(newChange - oldChange) > limit;
+        waypoints = [waypoints x(i+1) y(i+1)];
+        k=k+1;
+    end
+    oldChange = newChange;
+
+end
+%Inserting the first waypoint in the shortest path route
+waypoints = [waypoints x(i) y(i)];
+
+%Flipping the waypoint matrix so that the last waypoint becomes the first
+%according to the robot position
+waypoints = flipdim(waypoints,2);
+
+end
+

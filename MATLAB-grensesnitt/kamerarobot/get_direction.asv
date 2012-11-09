@@ -1,0 +1,36 @@
+function [rot_angel_motor rot_angel] = get_direction(lines,img_height,img_width)
+%metoden tar inn lines strukturen og bestemmer hvilken retning roboten skal
+%snu seg for å sentrere om hjørnet
+lowest = 0;
+for k = 1:length(lines)
+%Først skal vi velge ut de vertikale kantene
+    if (lines(k).theta> -6 && lines(k).theta<6)
+        %Når vi har funnet de vertikale ser vi etter den linjen som er
+        %nederst. I labyrinten vil den linjen som starter nederst være den
+        %nærmeste hvis forholdene er optimale     
+        if(lines(k).point2(2) > lowest)
+            lowest = lines(k).point2(2);
+            line_number = k;
+        end
+    end
+    
+end
+
+%nå er den lengste funnet
+
+%for å finne ut hvor mange grader kameraet må snu seg for å sentrere på
+%streken regner jeg om strekens pixelverdi til grader. Formelen blir som
+%følger
+%Grader =
+%(Strek plassering i pixler * Kameraets Synsfelt i grader)/Bilde Bredde i pixler
+
+rot_angel = (lines(line_number).point2(1)* 42)/img_width;
+
+%Motorens koordiantsystem er forskøvet i forhold til bildets
+%koordinatsystem. det som er 0 grader i bildet tilsvarer +21 grader for
+%motoren. 42 grader i bildet er lik -21 grader for motoren.
+
+cam_view_field_center = 42/2;
+rot_angel_motor = cam_view_field_center - rot_angel;
+
+    

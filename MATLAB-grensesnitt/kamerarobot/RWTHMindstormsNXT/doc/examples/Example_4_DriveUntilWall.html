@@ -1,0 +1,183 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Example 4: Drive Until Wall</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="Example_4_DriveUntilWall">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Example 4: Drive Until Wall</h1>
+         <introduction>
+            <p>In this little demo our robot drives forward until it detects a wall.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Matlab</a></li>
+               <li><a href="#2">Constants</a></li>
+               <li><a href="#3">Initialize NXT connection</a></li>
+               <li><a href="#4">Reset Motor / remember start position</a></li>
+               <li><a href="#5">Prepare sensor</a></li>
+               <li><a href="#6">And GO!</a></li>
+               <li><a href="#7">Detect wall (sensor loop)</a></li>
+               <li><a href="#8">Immediately stop all motors!</a></li>
+               <li><a href="#9">Signal</a></li>
+               <li><a href="#10">Drive back home!</a></li>
+               <li><a href="#11">Wait until there</a></li>
+               <li><a href="#12">clean up</a></li>
+               <li><a href="#13">Close NXT connection</a></li>
+            </ul>
+         </div>
+         <h2>Matlab<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+</pre><h2>Constants<a name="2"></a></h2><pre class="codeinput">MaxDriveTime = 30; <span class="comment">% in seconds, stop after this time...</span>
+USPort       = SENSOR_4;
+</pre><h2>Initialize NXT connection<a name="3"></a></h2><pre class="codeinput">handle = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_SetDefaultNXT(handle);
+</pre><h2>Reset Motor / remember start position<a name="4"></a></h2><pre class="codeinput">ResetMotorAngle(MOTOR_B);
+ResetMotorAngle(MOTOR_C);
+StartPos = GetMotorSettings(MOTOR_B);
+</pre><h2>Prepare sensor<a name="5"></a></h2><pre class="codeinput">OpenUltrasonic(USPort)
+</pre><h2>And GO!<a name="6"></a></h2><pre class="codeinput">SetMotor(MOTOR_B);
+    SyncToMotor(MOTOR_C);
+    SetPower(60);
+    SetAngleLimit(0);
+    SetTurnRatio(0);
+    SetRampMode (<span class="string">'off'</span>);
+SendMotorSettings();
+</pre><h2>Detect wall (sensor loop)<a name="7"></a></h2><pre class="codeinput">tictic(1);
+<span class="keyword">while</span>(toctoc(1) &lt; MaxDriveTime)
+   <span class="keyword">if</span> GetUltrasonic(USPort) &lt; 30
+       <span class="keyword">break</span>
+   <span class="keyword">end</span><span class="comment">%if</span>
+<span class="keyword">end</span><span class="comment">%while</span>
+</pre><h2>Immediately stop all motors!<a name="8"></a></h2><pre class="codeinput">StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+<span class="comment">% but where are we now?</span>
+CurPos = GetMotorSettings(MOTOR_B);
+</pre><h2>Signal<a name="9"></a></h2><pre class="codeinput">NXT_PlayTone(440, 1000);
+</pre><h2>Drive back home!<a name="10"></a></h2>
+         <p>To try to understand what exactly the different rotation count values mean, we compare them just for fun</p><pre class="codeinput">TotalAbsDist = StartPos.TachoCount - CurPos.TachoCount;
+Dist         = CurPos.Angle;
+
+SetMotor(MOTOR_B);
+    SyncToMotor(MOTOR_C);
+    SetPower(-60);
+    SetAngleLimit(abs(Dist));
+SendMotorSettings();
+</pre><h2>Wait until there<a name="11"></a></h2><pre class="codeinput">WaitForMotor(1, MaxDriveTime);
+
+<span class="comment">% brake</span>
+StopMotor(<span class="string">'all'</span>, <span class="string">'brake'</span>);
+
+pause(1);
+</pre><h2>clean up<a name="12"></a></h2><pre class="codeinput">CloseSensor(SENSOR_4)
+StopMotor (<span class="string">'all'</span>, <span class="string">'off'</span>);
+</pre><h2>Close NXT connection<a name="13"></a></h2><pre class="codeinput">COM_CloseNXT(handle);
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Example 4: Drive Until Wall
+% In this little demo our robot drives forward until it detects a wall.
+
+%% Matlab
+clear all
+close all
+
+
+%% Constants
+MaxDriveTime = 30; % in seconds, stop after this time...
+USPort       = SENSOR_4;
+
+
+%% Initialize NXT connection
+handle = COM_OpenNXT('bluetooth.ini', 'check');
+COM_SetDefaultNXT(handle);
+
+
+%% Reset Motor / remember start position
+ResetMotorAngle(MOTOR_B);
+ResetMotorAngle(MOTOR_C);
+StartPos = GetMotorSettings(MOTOR_B);
+
+
+%% Prepare sensor
+OpenUltrasonic(USPort)
+
+
+%% And GO!
+
+SetMotor(MOTOR_B);
+    SyncToMotor(MOTOR_C);
+    SetPower(60);
+    SetAngleLimit(0);
+    SetTurnRatio(0);
+    SetRampMode ('off');
+SendMotorSettings();
+
+
+%% Detect wall (sensor loop)
+tictic(1); 
+while(toctoc(1) < MaxDriveTime)
+   if GetUltrasonic(USPort) < 30
+       break
+   end%if
+end%while
+
+
+%% Immediately stop all motors!
+StopMotor('all', 'off');
+% but where are we now?
+CurPos = GetMotorSettings(MOTOR_B);
+
+
+%% Signal
+NXT_PlayTone(440, 1000);
+
+
+%% Drive back home!
+% To try to understand what exactly the different rotation count values
+% mean, we compare them just for fun
+TotalAbsDist = StartPos.TachoCount - CurPos.TachoCount;
+Dist         = CurPos.Angle;
+
+SetMotor(MOTOR_B);
+    SyncToMotor(MOTOR_C);
+    SetPower(-60);
+    SetAngleLimit(abs(Dist));
+SendMotorSettings();
+
+
+%% Wait until there
+WaitForMotor(1, MaxDriveTime);
+
+% brake
+StopMotor('all', 'brake');
+
+pause(1);
+
+%% clean up
+CloseSensor(SENSOR_4)
+StopMotor ('all', 'off');
+
+
+%% Close NXT connection
+COM_CloseNXT(handle);
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

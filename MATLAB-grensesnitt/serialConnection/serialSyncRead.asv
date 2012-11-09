@@ -1,0 +1,19 @@
+function [error,data]=serialSyncRead(serialCon,numbytes)
+error=0;
+global simu;
+simu=1;
+
+if simu==0
+    %data = fscanf(serialCon,'%c',numbytes);
+    
+    data = fread(serialCon,numbytes);
+    if( isempty(data) )
+        error=1;
+    end;
+    
+elseif simu==1
+   
+   data=robot(numbytes);
+   
+end
+

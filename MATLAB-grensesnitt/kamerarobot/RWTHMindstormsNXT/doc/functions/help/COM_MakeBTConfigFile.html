@@ -1,0 +1,97 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>COM_MakeBTConfigFile</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_COM_MakeBTConfigFile">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>COM_MakeBTConfigFile</h1>
+         <introduction>
+            <p>Creates a Bluetooth configuration file which is needed to open a Bluetooth connection.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#4">Description</a></li>
+               <li><a href="#7">Example</a></li>
+               <li><a href="#9">See also</a></li>
+               <li><a href="#11">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>COM_MakeBTConfigFile()</tt></p>
+         <h2>Description<a name="4"></a></h2>
+         <p><tt>COM_MakeBTConfigFile()</tt> starts a user guided dialog window to select the output directory, the file name and the Bluetooth paramters like e.g. COM
+            port.
+         </p>
+         <p>The little program creates a specific Bluetooth configuration file for the current PC system. Make sure the configuration
+            file is accessible under MATLAB if you try to open a Bluetooth connection using <tt>COM_OpenNXT</tt> and the correct file name.
+         </p>
+         <h2>Example<a name="7"></a></h2><pre class="codeinput">   COM_MakeBTConfigFile();
+
+   handle = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+</pre><h2>See also<a name="9"></a></h2>
+         <p><a href="COM_OpenNXT.html">COM_OpenNXT</a>, <a href="COM_CloseNXT.html">COM_CloseNXT</a>, <a href="COM_OpenNXTEx.html">COM_OpenNXTEx</a></p>
+         <h2>Signature<a name="11"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Alexander Behrens, Linus Atorf (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2008/07/09
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% COM_MakeBTConfigFile
+% Creates a Bluetooth configuration file which is needed to open a Bluetooth connection.
+%%
+%% Syntax
+% |COM_MakeBTConfigFile()|
+%%
+%% Description
+% |COM_MakeBTConfigFile()| starts a user guided dialog window to select the output directory,
+% the file name and the Bluetooth paramters like e.g. COM port.
+%%
+% The little program creates a specific Bluetooth configuration file for the current PC system.
+% Make sure the configuration file is accessible under MATLAB if you try to open a Bluetooth
+% connection using |COM_OpenNXT| and the correct file name.
+%%
+%% Example
+   COM_MakeBTConfigFile();
+
+   handle = COM_OpenNXT('bluetooth.ini', 'check');
+%%
+%% See also
+% COM_OpenNXT, COM_CloseNXT, COM_OpenNXTEx
+%%
+%% Signature
+%%
+% * *Author:* Alexander Behrens, Linus Atorf (see AUTHORS)
+% * *Date:* 2008/07/09
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

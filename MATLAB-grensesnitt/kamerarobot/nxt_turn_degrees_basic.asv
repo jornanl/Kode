@@ -1,0 +1,16 @@
+function [vinkel rot_B rot_C] = nxt_turn_degrees_basic(degrees)
+
+%positiv retning er rotasjon med klokka bla bla
+gear = 4.222;
+
+
+dist = (degrees*gear)/2;
+
+data_B = nxt_get_motor_info(MOTOR_B);
+data_C = nxt_get_motor_info(MOTOR_C);
+
+
+MotorRotateAbs(MOTOR_B, dist,10 );
+MotorRotateAbs(MOTOR_C, dist,10 );
+
+

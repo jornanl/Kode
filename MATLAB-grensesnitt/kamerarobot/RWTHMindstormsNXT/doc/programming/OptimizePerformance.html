@@ -1,0 +1,84 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Optimizing performance</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="OptimizePerformance">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Optimizing performance</h1>
+         <introduction>
+            <p>When working with RWTH - Mindstorms NXT Toolbox and USB connections, high packet rates of more than 100 sensor or motor readings
+               per second are common. In order to achieve such short latency for MATLAB - NXT communication, high CPU load is generated,
+               being the speed limit on slow machines.
+            </p>
+         </introduction>
+         <p>To improve performance, a function called</p><pre class="codeinput">OptimizeToolboxPerformance
+</pre><p>is provided. It will replace the frequently called function <tt>typecast</tt> with a faster binary version (<tt>typecastc</tt>). The binary MEX-files are already included in your MATLAB installation directory. But since they reside in a private directory,
+            they cannot be accessed from the outside. That is why <tt>OptimizeToolboxPerformance</tt> will try to copy all binary files to the toolboxes own private directory. So, before calling the function, make sure you
+            got write access where you installed RWTH - Mindstorms NXT Toolbox.
+         </p>
+         <p>The function <tt>OptimizeToolboxPerformance</tt> is fail-safe and verifies each step. The user is asked before action is taken. Just run the command to improve your toolbox
+            performance by a factor of up to 3 (depending on your machine of course). If it succeeds, the lowlevel functions <tt>wordbytes2dec</tt> and <tt>dec2wordbytes</tt> will have been replaced by faster versions, leading to less CPU load needed (and hence faster toolbox speed).
+         </p>
+         <p>Please note that the function only copies files that are already present in you MATLAB installation. So the optimization will
+            most likely only work for the specific MATLAB version, and only for the operating system you ran the command from.
+         </p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Optimizing performance
+% When working with RWTH - Mindstorms NXT Toolbox and USB connections, high
+% packet rates of more than 100 sensor or motor readings per second are
+% common. In order to achieve such short latency for MATLAB - NXT
+% communication, high CPU load is generated, being the speed limit on slow
+% machines.
+
+%%
+% To improve performance, a function called
+
+OptimizeToolboxPerformance
+
+%%
+% is provided. It will replace the frequently called function
+% |typecast| with a faster binary version (|typecastc|). The
+% binary MEX-files are already included in your MATLAB installation
+% directory. But since they reside in a private directory, they cannot be
+% accessed from the outside. That is why |OptimizeToolboxPerformance| will
+% try to copy all binary files to the toolboxes own private directory. So,
+% before calling the function, make sure you got write access where you
+% installed RWTH - Mindstorms NXT Toolbox.
+
+%%
+% The function |OptimizeToolboxPerformance| is fail-safe and verifies each step.
+% The user is asked before action is taken. Just run the command to improve
+% your toolbox performance by a factor of up to 3 (depending on your
+% machine of course). If it succeeds, the lowlevel functions
+% |wordbytes2dec| and |dec2wordbytes| will have been replaced by faster
+% versions, leading to less CPU load needed (and hence faster toolbox speed).
+%
+
+%%
+% Please note that the function only copies files that are already present
+% in you MATLAB installation. So the optimization will most likely only
+% work for the specific MATLAB version, and only for the operating system
+% you ran the command from.
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

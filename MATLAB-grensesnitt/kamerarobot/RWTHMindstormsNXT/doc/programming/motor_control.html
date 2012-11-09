@@ -1,0 +1,618 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>High level motor control</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="motor_control">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>High level motor control</h1>
+         <introduction>
+            <p>In this section we've got:</p>
+         </introduction>
+         <div>
+            <ul>
+               <li><tt>SetMotor</tt></li>
+               <li><tt>GetMotor</tt></li>
+               <li><tt>SetPower</tt></li>
+               <li><tt>SetAngleLimit</tt></li>
+               <li><tt>SetTurnRatio</tt></li>
+               <li><tt>SetRampMode</tt></li>
+               <li><tt>SpeedRegulation</tt></li>
+               <li><tt>SyncToMotor</tt></li>
+               <li><tt>SendMotorSettings</tt></li>
+               <li><tt>GetMotorSettings</tt></li>
+               <li><tt>StopMotor</tt></li>
+               <li><tt>ResetMotorAngle</tt></li>
+               <li><tt>WaitForMotor</tt></li>
+               <li><tt>SwitchLamp</tt></li>
+            </ul>
+         </div>
+         <p>These functions provide a very high level and simple way to access almost all motor features. The idea behind this is as follows:
+            First you specify the motor number (port) you want to work with. All successive commands then affect this current motor. Once
+            you are done setting everything you need, you submit these changes and issue a send command.
+         </p>
+         <p>Let's just walk through this</p><pre class="codeinput">SetMotor(0); <span class="comment">% first motor is active now</span>
+</pre><p>This is a great opportunity to show that all of these functions accept also strings as input for numbers, i.e.:</p><pre class="codeinput">SetMotor(<span class="string">'0'</span>);
+</pre><p>What's the point of this? Well, we now can use this fancy syntax:</p><pre class="codeinput">SetMotor <span class="string">0</span>
+</pre><p>Another option is to use symbolic constants for port numbers, that map to easy understandable port labels just as found on
+            the NXT:
+         </p><pre class="codeinput">SetMotor(MOTOR_B); <span class="comment">% identical to SetMotor(1);</span>
+</pre><p>In the end it's your choice which way you use to address the ports, however we recommend the usage of constants <tt>MOTOR_A</tt>, <tt>MOTOR_B</tt> and <tt>MOTOR_C</tt>.
+         </p>
+         <p>GetMotor just returns the motor you previously set. It can be useful when mixing <tt>NXT_</tt> functions inbetween (they need a motor port as input):
+         </p><pre class="codeinput">NXT_ResetMotorPosition(GetMotor, true); <span class="comment">% good style, works with current motor</span>
+</pre><p>Now the active motor is set, and we can specify all the details we want. When we're done (i.e. when the motor should finally
+            start spinning), we send.
+         </p><pre class="codeinput"><span class="comment">% it's nice to arrange the commands like this</span>
+SetMotor <span class="string">0</span>
+    SetPower <span class="string">50</span>
+    AngleLimit <span class="string">360</span>
+SendMotorSettings
+</pre><p>Voila, motor 0 should have made a full 360&deg; turn by now...</p>
+         <p>To let the motor run forever (or until you change your mind and tell it something different), use an angle limit of 0:</p><pre class="codeinput">SetMotor <span class="string">0</span>
+    SetPower <span class="string">50</span>
+    AngleLimit <span class="string">0</span>    <span class="comment">% run till the end of time (or battery, for that matter)</span>
+SendMotorSettings
+</pre><p>If we want the motor to rotate at a constant speed as accurate as possible, we have to enable speed regulation. Like all the
+            other commands, this affects the currently set motor only and the settings will only be applied with the <tt>SendMotorSettings</tt> command.
+         </p><pre class="codeinput">    SpeedRegulation <span class="string">on</span>
+</pre><p>One noteworthy effect of the internal speed regulation is, that the motor will increase the power if the desired rotational
+            speed cannot be met. Example: Consider you set a power of 20 without speed regulation, but your bot is so heavy that it does
+            not move (although you can still hear the motors are trying to). If you enable speed regulation, the motor will internally
+            increase its power until the wheels are moving, just like they would normally without a force acting against them. However,
+            using speed regulation with a power of 100 does NOT give you more power. 100 percent is all that you can get.
+         </p>
+         <p>Note: SpeedRegulation seems to somehow deteriorate the motor's precision when targeting small distances (small values for
+            <tt>SetAngleLimit</tt>), so use with care.
+         </p>
+         <p>For driving robots, the regulation mode "synchronization" is very interesting. It synchronizes two motors and they then act
+            as if they were connected through an axle, so that the robot can drive straight forward. This is implemented using
+         </p><pre class="codeinput">SetMotor <span class="string">1</span>
+    SyncToMotor <span class="string">2</span>
+    SetPower <span class="string">50</span>
+SendMotorSettings
+</pre><p>In the example above our bot will start driving forward (assuming motor 1 and 2 are the ones with wheels). From the point
+            on where you call <tt>SyncToMotor</tt>, all settings affect both synced motors (if one of them is set active of course). Even <tt>SendMotorSettings</tt> will internally send two packets to each of the motors, so that you can use them as if they were really connected.
+         </p>
+         <p>Only with synced motors it is possible to drive curves or turn around:</p><pre class="codeinput">SetMotor <span class="string">1</span>
+    SyncToMotor <span class="string">2</span>
+    SetPower <span class="string">50</span>
+    SetTurnRatio <span class="string">100</span>
+    SetAngleLimit <span class="string">200</span>
+SendMotorSettings
+</pre><p>The turn ratio command shifts power between synced motors. 100 means one motor is spinning forward and the other backwards,
+            resulting in the maximal rotational effect possible. 50 means one motor is running and the other is stopped, and with values
+            bewteen 1 and 49 you can get nice curves (both wheels spinning, but not at equal speed). Needless to say, 0 results in a straight
+            forward direction. You can use negative values for opposite directions (i.e. left and right turning, but that depends on the
+            robot model).
+         </p>
+         <p>Ok, so now we want to turn off synchronisation</p><pre class="codeinput">    SyncToMotor <span class="string">off</span>
+</pre><p>Note that a motor can only be synchronized to another motor <i>or</i> speed regulated at a time! We have to manually turn off synchronization, before enabling speed regulation again, and vice
+            versa!
+         </p><pre class="codeinput">    SyncToMotor <span class="string">off</span>
+    SpeedRegulation <span class="string">on</span>
+</pre><p>Note that the function <tt>StopMotor</tt> also resets motor regulation and synchronization. This is by design, see documentation.
+         </p>
+         <p>We've got one special setting left:</p><pre class="codeinput">    SetPower <span class="string">100</span>
+    SetAngleLimit <span class="string">1080</span>
+    SetRampMode <span class="string">up</span>
+</pre><p>This uses the motor's runstate <tt>RAMPUP</tt>, which basically accelerates smoothly from the old power to the new power. It's only valid when you specify an angle limit.
+            This is the rotational distance during which the motor will adjust the power to the new value.
+         </p>
+         <p>To decelerate ("brake" smoothly) use</p><pre class="codeinput">    SetPower <span class="string">0</span>
+    SetAngleLimit <span class="string">1080</span>
+    SetRampMode <span class="string">down</span>
+</pre><p>or turn it off again (runstate <tt>RUNNING</tt>, "normal" movement), which is also the default setting:
+         </p><pre class="codeinput">    SetRampMode <span class="string">off</span>
+</pre><p>Once we've seen all options for the <tt>SendMotorSettings</tt>, it's worth to know that you can also access all these options with one single line.
+         </p><pre class="codeinput">SendMotorSettings(MOTOR_A, 50, 360, <span class="string">'off'</span>, MOTOR_B, 25, <span class="string">'up'</span>)
+</pre><p>This results in <tt>MOTOR_A</tt> being synced to <tt>MOTOR_B</tt>, both running with power 50, angle-limit 360 degrees, speed-regulation turned 'off', ramp-mode is 'up', and a turn-ratio
+            of 25. Again it's your choice which way you like better, but it is <i>clearly recommended</i> to use the long version, whose syntax is better understandable.
+         </p>
+         <p>Ok fine. Now we've got a very handy command here:</p><pre class="codeinput">StopMotor(GetMotor, <span class="string">'off'</span>);
+</pre><p>This will turn off power to the current motor, enabling the so called COAST mode, in which you can rotate the motor freely
+            as you like. Of course I could've also written <tt>StopMotor(0, 'off')</tt>, but I wanted to demonstrate a possible use of <tt>GetMotor</tt> again (avoid too much hardcoding of motor numbers, or of any values at all if possible).
+         </p>
+         <p>The other option is</p><pre class="codeinput">StopMotor(GetMotor, <span class="string">'brake'</span>);
+</pre><p>This will actively stop and hold the motor at its current position. Try moving it, it is harder than you think ;-). Works
+            like an emergency brake for driving robots. It consumes quite a lot of power, so you shouldn't leave your bot in this setting
+            for too much time.
+         </p>
+         <p>And finally we've got this handy version:</p><pre class="codeinput">StopMotor <span class="string">all</span> <span class="string">off</span> <span class="comment">% note the syntax, short for StopMotor('all', 'off')</span>
+</pre><p>The parameter <tt>all</tt> is special, not just because it is turning off (or braking) all motors, but because it does so <i>at once</i>. Internally only <i>one</i> packet is sent for all three motors, so you only have to expect one third of the lag (compared to sending three packets).
+            Also, you can turn off the motors almost synchronously, compared to one by one with the usual sending delay. It's a nice command
+            that can very often be found at the start or end of programs to ensure all motors are turned off and don't take any power...
+         </p>
+         <p>So now we can control the motors, but how do we poll their rotation sensor? The answer is:</p><pre class="codeinput">out = GetMotorSettings(MOTOR_C);
+
+<span class="comment">% so lets look into the results:</span>
+
+out.IsRunning         <span class="comment">% boolean, true if the motor "does something"</span>
+out.Power             <span class="comment">% current power</span>
+out.AngleLimit        <span class="comment">% current set angle limit, 0 means none set</span>
+out.TurnRatio         <span class="comment">% current turn ratio</span>
+
+out.SpeedRegulation   <span class="comment">% boolean, speed regulated or not?</span>
+out.SyncToMotor       <span class="comment">% the motor this one is synced to. -1 means not synced</span>
+
+out.TachoCount        <span class="comment">% internal, non-resettable rotation-counter (in degrees)</span>
+out.Angle             <span class="comment">% current motor position, resettable using</span>
+                      <span class="comment">% ResetMotorAngle(port);</span>
+
+out.MotorBrake        <span class="comment">% boolean, is electronic braking enabled?</span>
+                      <span class="comment">%  (this has nothing to do with braking in a common</span>
+                      <span class="comment">%  sense, just ignore it, should be turned on by</span>
+                      <span class="comment">%  default anyway as it improves motor performance)</span>
+</pre><p>This should give us all information about the motor we need. Internally a <tt>NXT_GetOutputState</tt> is used of course. Note that the <tt>.Angle</tt> value is actually the NXT internal <tt>BlockTachoCount</tt>, which you can reset using <tt>ResetMotorAngle()</tt> or <tt>NXT_ResetMotorPosition(GetMotor, true)</tt> (i.e. what is called <i>relative</i> motor position in the official Mindstorms documentation).
+         </p><pre class="codeinput">ResetMotorAngle(MOTOR_A);
+</pre><p>The <tt>.TachoCount</tt> on the other hand is much like your car's mileage counter. It gives the total amount of degrees the motor has rotated since
+            the NXT was turned on, and it is not resettable (it will however be resetted, when a new external program is started, which
+            you can enforce using <tt>NXT_StartProgram</tt>). You can also set it back to zero if you turn the motor back exactly the amount it was turned forward :-). Restarting the
+            NXT brick is a more comfortable way...
+         </p>
+         <p>We have got yet one more very handy function for you. Suppose you've just set your motor to run a certain distance, i.e. using</p><pre class="codeinput">SetMotor <span class="string">0</span>
+    SetPower <span class="string">20</span>
+    SetAngleLimit <span class="string">360</span>
+SendMotorSettigns
+</pre><p>Now power 20 is not very fast, so it will take some time for the motor until it has reached its angle limit. But how do you
+            know when it's done? You could create a loop and constantly call <tt>GetMotorSettings</tt> to check wether <tt>.IsRunning</tt> is set or not. And this is exactly what <tt>WaitForMotor</tt> does.
+         </p><pre class="codeinput">SetMotor <span class="string">0</span>
+    SetPower <span class="string">20</span>
+    SetAngleLimit <span class="string">360</span>
+SendMotorSettigns
+
+WaitForMotor(GetMotor) <span class="comment">% you've seen me using GetMotor before...</span>
+
+<span class="comment">% if this WaitForMotor was not here, we would send the</span>
+<span class="comment">% PlaySound command DIRECTLY after starting the motor!</span>
+<span class="comment">% Try it for yourself. Basically our Matlab is "blocked" now and holds</span>
+<span class="comment">% execution, until the motor is done...</span>
+
+NXT_PlaySound(440, 200)
+</pre><p>This will play a short beep on the NXT immediately after the motor has reached its angle limit. Of course that does <i>not</i> mean that the motor has stopped already: It's currently in coast mode and will keep turning a short while. That is why, the
+            following commands sequence is often used to try to stop at a certain position:
+         </p><pre class="codeinput"><span class="comment">% ...</span>
+SendMotorSettigns
+WaitForMotor(GetMotor)
+StopMotor(GetMotor, <span class="string">'brake'</span>) <span class="comment">% actively hold still</span>
+pause(1) <span class="comment">% do so for a short while</span>
+<span class="comment">% active braking has a high power consumption, so:</span>
+StopMotor(GetMotor, <span class="string">'off'</span>) <span class="comment">% release motor</span>
+</pre><p><tt>WaitForMotor</tt> has one more parameter that you can use. Imagine what happens with this code snippet:
+         </p><pre class="codeinput">SetMotor <span class="string">0</span>
+    SetPower <span class="string">20</span>
+    SetAngleLimit <span class="string">0</span> <span class="comment">% 0 means no angle limit = run forever</span>
+SendMotorSettigns
+WaitForMotor(GetMotor)
+</pre><p>See it? You've created an endless loop. Matlab will block till the end of time (or battery in this case), as the motor will
+            not stop. Why should it, it has no angle limit set.
+         </p>
+         <p>Something else can happen: You can set an angle limit, let's say a certain distance for a driving robot. But there is a wall,
+            the bot can't go any further, and again: Endless loop, because the motor will not reach its angle limit.
+         </p>
+         <p>The solution for this is a built-in timeout. Try:</p><pre class="codeinput">WaitForMotor(GetMotor, 10)
+</pre><p>or use this syntax if you like it better:</p><pre class="codeinput">WaitForMotor <span class="string">0</span> <span class="string">10</span>
+</pre><p>This time the function will only block for a maximum of 10 seconds. If the motor is done earlier, fine. Then the function
+            will exit of course. But if it got stuck or is in an endless loop, after the timeout period (you can use fractions by the
+            way, like 5.7) <tt>WaitForMotor</tt> will continue execution. The price for avoiding this endless loop / Matlab block: When specifying a timeout, you cannot be
+            sure that the motor really has stopped, or wether it timed out. So take care of the consequences on your own (e.g. by reading
+            <tt>.Angle</tt> to see wether the specified angle limit was met, or by checking <tt>.IsRunning</tt> to see if the motor is still blocked)...
+         </p>
+         <p>The motor ports can also be used for other actuators besides the NXT motors. Lamps can be connected, too. The following function
+            can be used to turn the lamp  on and a short while later off.
+         </p><pre class="codeinput">SwitchLamp(MOTOR_C, <span class="string">'on'</span>);
+pause(1)
+SwitchLamp(MOTOR_C, <span class="string">'off'</span>);
+</pre><p>It is also possible to use 'all' as port-number, just like you've seen for <tt>StopMotor</tt>:
+         </p><pre class="codeinput">SwitchLamp <span class="string">all</span> <span class="string">off</span>
+</pre><p>There is no secret behind <tt>SwitchLamp</tt> - it just sets power 100 for the specific output port. You could have used <tt>SendMotorSettings</tt> as well, but <tt>SwitchLamp</tt> is easier in this case and better to understand.
+         </p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% High level motor control
+% In this section we've got:
+
+%%
+% * |SetMotor|
+% * |GetMotor|
+% * |SetPower|
+% * |SetAngleLimit|
+% * |SetTurnRatio|
+% * |SetRampMode|
+% * |SpeedRegulation|
+% * |SyncToMotor|
+% * |SendMotorSettings|
+% * |GetMotorSettings|
+% * |StopMotor|
+% * |ResetMotorAngle|
+% * |WaitForMotor|
+% * |SwitchLamp|
+
+%%
+% These functions provide a very high level and simple way to access almost
+% all motor features. The idea behind this is as follows: First you specify
+% the motor number (port) you want to work with. All successive commands
+% then affect this current motor. Once you are done setting everything you
+% need, you submit these changes and issue a send command.
+%
+% Let's just walk through this
+
+SetMotor(0); % first motor is active now
+
+%%
+% This is a great opportunity to show that all of these functions accept
+% also strings as input for numbers, i.e.:
+
+SetMotor('0');
+
+%%
+% What's the point of this? Well, we now can use this fancy syntax:
+
+SetMotor 0
+
+%%
+% Another option is to use symbolic constants for port numbers, that map to
+% easy understandable port labels just as found on the NXT:
+
+SetMotor(MOTOR_B); % identical to SetMotor(1);
+
+%%
+% In the end it's your choice which way you use to address the ports,
+% however we recommend the usage of constants |MOTOR_A|, |MOTOR_B| and
+% |MOTOR_C|.
+
+
+%%
+% GetMotor just returns the motor you previously set. It can be useful when
+% mixing |NXT_| functions inbetween (they need a motor port as input):
+
+NXT_ResetMotorPosition(GetMotor, true); % good style, works with current motor
+
+%%
+% Now the active motor is set, and we can specify all the details we want.
+% When we're done (i.e. when the motor should finally start spinning), we
+% send.
+
+% it's nice to arrange the commands like this
+SetMotor 0
+    SetPower 50
+    AngleLimit 360
+SendMotorSettings
+
+%%
+% Voila, motor 0 should have made a full 360° turn by now...
+%
+% To let the motor run forever (or until you change your mind and tell it
+% something different), use an angle limit of 0:
+%
+
+SetMotor 0
+    SetPower 50
+    AngleLimit 0    % run till the end of time (or battery, for that matter)
+SendMotorSettings
+
+
+%%
+% If we want the motor to rotate at a constant speed as accurate as
+% possible, we have to enable speed regulation. Like all the other
+% commands, this affects the currently set motor only and the settings will
+% only be applied with the |SendMotorSettings| command.
+
+    SpeedRegulation on
+
+%%
+% One noteworthy effect of the internal speed regulation is, that the motor
+% will increase the power if the desired rotational speed cannot be met.
+% Example: Consider you set a power of 20 without speed regulation, but
+% your bot is so heavy that it does not move (although you can still hear
+% the motors are trying to). If you enable speed regulation, the motor will
+% internally increase its power until the wheels are moving, just like they
+% would normally without a force acting against them. However, using speed
+% regulation with a power of 100 does NOT give you more power. 100 percent
+% is all that you can get.
+%
+% Note: SpeedRegulation seems to somehow deteriorate the motor's precision
+% when targeting small distances (small values for |SetAngleLimit|), so use
+% with care.
+%
+% For driving robots, the regulation mode "synchronization" is very
+% interesting. It synchronizes two motors and they then act as if they were
+% connected through an axle, so that the robot can drive straight forward.
+% This is implemented using
+%
+
+SetMotor 1
+    SyncToMotor 2
+    SetPower 50
+SendMotorSettings
+
+%%
+% In the example above our bot will start driving forward (assuming motor 1 and
+% 2 are the ones with wheels). From the point on where you call 
+% |SyncToMotor|, all settings affect both synced motors (if one of them is
+% set active of course). Even |SendMotorSettings| will internally send two
+% packets to each of the motors, so that you can use them as if they were
+% really connected.
+%
+% Only with synced motors it is possible to drive curves or turn around:
+
+SetMotor 1
+    SyncToMotor 2
+    SetPower 50
+    SetTurnRatio 100
+    SetAngleLimit 200
+SendMotorSettings
+
+%%
+% The turn ratio command shifts power between synced motors. 100 means one
+% motor is spinning forward and the other backwards, resulting in the
+% maximal rotational effect possible. 50 means one motor is running and the
+% other is stopped, and with values bewteen 1 and 49 you can get nice
+% curves (both wheels spinning, but not at equal speed). Needless to say, 0
+% results in a straight forward direction. You can use negative values for
+% opposite directions (i.e. left and right turning, but that depends on the
+% robot model).
+%
+% Ok, so now we want to turn off synchronisation
+
+    SyncToMotor off
+    
+%%
+% Note that a motor can only be synchronized to
+% another motor _or_ speed regulated at a time! We have to manually turn
+% off synchronization, before enabling speed regulation again, and vice
+% versa!
+
+    SyncToMotor off
+    SpeedRegulation on
+
+%%
+% Note that the function |StopMotor| also resets motor regulation and synchronization. This is
+% by design, see documentation.
+
+    
+%% 
+% We've got one special setting left:
+
+    SetPower 100
+    SetAngleLimit 1080
+    SetRampMode up
+
+%%
+% This uses the motor's runstate |RAMPUP|, which basically accelerates
+% smoothly from the old power to the new power. It's only valid when you
+% specify an angle limit. This is the rotational distance during which the
+% motor will adjust the power to the new value.
+%
+% To decelerate ("brake" smoothly) use
+
+    SetPower 0
+    SetAngleLimit 1080
+    SetRampMode down
+    
+%%
+% or turn it off again (runstate |RUNNING|, "normal" movement), which is
+% also the default setting:
+
+    SetRampMode off
+    
+%%
+% Once we've seen all options for the |SendMotorSettings|, it's worth to
+% know that you can also access all these options with one single line.
+
+SendMotorSettings(MOTOR_A, 50, 360, 'off', MOTOR_B, 25, 'up')
+
+%%
+% This results in |MOTOR_A| being synced to |MOTOR_B|, both running with power
+% 50, angle-limit 360 degrees, speed-regulation turned 'off', ramp-mode is
+% 'up', and a turn-ratio of 25.
+% Again it's your choice which way you like better, but it is _clearly
+% recommended_ to use the long version, whose syntax is better
+% understandable.
+%
+
+    
+%%
+% Ok fine. Now we've got a very handy command here:
+
+StopMotor(GetMotor, 'off');
+
+%%
+% This will turn off power to the current motor, enabling the so called
+% COAST mode, in which you can rotate the motor freely as you like.
+% Of course I could've also written |StopMotor(0, 'off')|, but I wanted to
+% demonstrate a possible use of |GetMotor| again (avoid too much hardcoding of
+% motor numbers, or of any values at all if possible).
+%
+% The other option is 
+
+StopMotor(GetMotor, 'brake');
+
+%%
+% This will actively stop and hold the motor at its current position. Try
+% moving it, it is harder than you think ;-). Works like an emergency brake
+% for driving robots. It consumes quite a lot of power, so you shouldn't
+% leave your bot in this setting for too much time.
+%
+% And finally we've got this handy version:
+
+StopMotor all off % note the syntax, short for StopMotor('all', 'off')
+
+%%
+% The parameter |all| is special, not just because it is turning off (or
+% braking) all motors, but because it does so _at once_. Internally only
+% _one_ packet is sent for all three motors, so you only have to expect one
+% third of the lag (compared to sending three packets). Also, you can turn
+% off the motors almost synchronously, compared to one by one with the
+% usual sending delay. It's a nice command that can very often be found at
+% the start or end of programs to ensure all motors are turned off and don't take any power...
+%
+% So now we can control the motors, but how do we poll their rotation
+% sensor? The answer is:
+
+out = GetMotorSettings(MOTOR_C);
+
+% so lets look into the results:
+                   
+out.IsRunning         % boolean, true if the motor "does something"
+out.Power             % current power
+out.AngleLimit        % current set angle limit, 0 means none set
+out.TurnRatio         % current turn ratio
+
+out.SpeedRegulation   % boolean, speed regulated or not?
+out.SyncToMotor       % the motor this one is synced to. -1 means not synced
+
+out.TachoCount        % internal, non-resettable rotation-counter (in degrees)
+out.Angle             % current motor position, resettable using
+                      % ResetMotorAngle(port);
+
+out.MotorBrake        % boolean, is electronic braking enabled?
+                      %  (this has nothing to do with braking in a common
+                      %  sense, just ignore it, should be turned on by
+                      %  default anyway as it improves motor performance)
+
+                      
+                      
+%%
+% This should give us all information about the motor we need. Internally a
+% |NXT_GetOutputState| is used of course. Note that the |.Angle| value is
+% actually the NXT internal |BlockTachoCount|, which you can reset using
+% |ResetMotorAngle()| or |NXT_ResetMotorPosition(GetMotor, true)| 
+% (i.e. what is called _relative_ motor position in the official Mindstorms documentation).
+%
+
+ResetMotorAngle(MOTOR_A);
+
+
+%%
+% The |.TachoCount| on the other hand is much like your car's mileage
+% counter. It gives the total amount of degrees the motor has rotated since
+% the NXT was turned on, and it is not resettable (it will however be resetted, when a 
+% new external program is started, which you can enforce using |NXT_StartProgram|). 
+% You can also set it back to zero if you turn the motor back exactly the amount it was turned forward
+% :-). Restarting the NXT brick is a more comfortable way...
+
+%%
+% We have got yet one more very handy function for you. Suppose you've just
+% set your motor to run a certain distance, i.e. using
+
+SetMotor 0
+    SetPower 20
+    SetAngleLimit 360
+SendMotorSettigns
+
+%%
+% Now power 20 is not very fast, so it will take some time for the motor
+% until it has reached its angle limit. But how do you know when it's done?
+% You could create a loop and constantly call |GetMotorSettings| to check
+% wether |.IsRunning| is set or not. And this is exactly what
+% |WaitForMotor| does.
+%
+
+SetMotor 0
+    SetPower 20
+    SetAngleLimit 360
+SendMotorSettigns
+
+WaitForMotor(GetMotor) % you've seen me using GetMotor before...
+
+% if this WaitForMotor was not here, we would send the
+% PlaySound command DIRECTLY after starting the motor!
+% Try it for yourself. Basically our Matlab is "blocked" now and holds
+% execution, until the motor is done...
+
+NXT_PlaySound(440, 200)
+
+%%
+% This will play a short beep on the NXT immediately after the motor has
+% reached its angle limit. Of course that does _not_ mean that the motor
+% has stopped already: It's currently in coast mode and will keep turning a
+% short while. That is why, the following commands sequence is often used
+% to try to stop at a certain position:
+
+% ...
+SendMotorSettigns
+WaitForMotor(GetMotor)
+StopMotor(GetMotor, 'brake') % actively hold still
+pause(1) % do so for a short while
+% active braking has a high power consumption, so:
+StopMotor(GetMotor, 'off') % release motor
+
+%%
+% |WaitForMotor| has one more
+% parameter that you can use. Imagine what happens with this code snippet:
+
+SetMotor 0
+    SetPower 20
+    SetAngleLimit 0 % 0 means no angle limit = run forever
+SendMotorSettigns
+WaitForMotor(GetMotor)
+
+%%
+% See it? You've created an endless loop. Matlab will block till the end of
+% time (or battery in this case), as the motor will not stop. Why should
+% it, it has no angle limit set.
+%
+% Something else can happen: You can set an angle limit, let's say a certain 
+% distance for a driving robot. But there is a wall, the bot can't go any
+% further, and again: Endless loop, because the motor will not reach its
+% angle limit.
+%
+% The solution for this is a built-in timeout. Try:
+
+WaitForMotor(GetMotor, 10)
+
+%%
+% or use this syntax if you like it better:
+WaitForMotor 0 10
+
+%%
+% This time the function will only block for a maximum of 10 seconds. If
+% the motor is done earlier, fine. Then the function will exit of course.
+% But if it got stuck or is in an endless loop, after the timeout period
+% (you can use fractions by the way, like 5.7) |WaitForMotor| will continue
+% execution. The price for avoiding this endless loop / Matlab block: When
+% specifying a timeout, you cannot be sure that the motor really has
+% stopped, or wether it timed out. So take care of the consequences on
+% your own (e.g. by reading |.Angle| to see wether the specified angle limit
+% was met, or by checking |.IsRunning| to see if the motor is still blocked)...
+
+%%
+% The motor ports can also be used for other actuators besides the NXT
+% motors. Lamps can be connected, too. The following function can be
+% used to turn the lamp  on and a short while later off.
+
+SwitchLamp(MOTOR_C, 'on');
+pause(1)
+SwitchLamp(MOTOR_C, 'off');
+
+%%
+% It is also possible to use 'all' as port-number, just like you've seen
+% for |StopMotor|:
+
+SwitchLamp all off
+
+%%
+% There is no secret behind |SwitchLamp| - it just sets power 100 for the
+% specific output port. You could have used |SendMotorSettings| as well,
+% but |SwitchLamp| is easier in this case and better to understand.
+##### SOURCE END #####
+-->
+   </body>
+</html>

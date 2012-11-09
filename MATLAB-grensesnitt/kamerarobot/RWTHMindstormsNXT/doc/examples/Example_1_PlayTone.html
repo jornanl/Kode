@@ -1,0 +1,65 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Example 1: Play Tone and Get Battery Level</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="Example_1_PlayTone">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Example 1: Play Tone and Get Battery Level</h1>
+         <p>Example to play a specific tone with the NXT Brick and retrieve the current battery level:</p>
+         <p>Prepare workspace by cleaning all old settings to be on the safe side.</p><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+
+<span class="comment">% Open new NXT connection according to the previous generated configuration file.</span>
+handle = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_SetDefaultNXT(handle);
+
+<span class="comment">%Play tone with frequency 800Hz and duration of 500ms.</span>
+NXT_PlayTone(800,500);
+
+<span class="comment">%Get current battery level.</span>
+voltage = NXT_GetBatteryLevel
+
+<span class="comment">%Close Bluetooth connection.</span>
+COM_CloseNXT(handle);
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Example 1: Play Tone and Get Battery Level
+% Example to play a specific tone with the NXT Brick and retrieve the current battery level: 
+%
+% Prepare workspace by cleaning all old settings to be on the safe side. 
+clear all
+close all
+
+% Open new NXT connection according to the previous generated configuration file. 
+handle = COM_OpenNXT('bluetooth.ini', 'check');
+COM_SetDefaultNXT(handle);
+
+%Play tone with frequency 800Hz and duration of 500ms. 
+NXT_PlayTone(800,500);
+
+%Get current battery level. 
+voltage = NXT_GetBatteryLevel
+
+%Close Bluetooth connection. 
+COM_CloseNXT(handle);
+##### SOURCE END #####
+-->
+   </body>
+</html>

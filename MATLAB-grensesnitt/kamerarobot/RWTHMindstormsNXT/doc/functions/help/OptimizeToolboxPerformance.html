@@ -1,0 +1,114 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>OptimizeToolboxPerformance</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_OptimizeToolboxPerformance">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>OptimizeToolboxPerformance</h1>
+         <introduction>
+            <p>Copies binary versions of typecastc to toolbox for better performance</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#5">Description</a></li>
+               <li><a href="#11">Example</a></li>
+               <li><a href="#13">See also</a></li>
+               <li><a href="#15">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>OptimizeToolboxPerformance</tt></p>
+         <h2>Description<a name="5"></a></h2>
+         <p>This script automates toolbox optimization. The private functions wordbytes2dec and dec2wordbytes are very frequently called
+            and thus most critical for performance (mostly, but not only CPU load), especially at high packet rates (USB). Profiling shows
+            the bottleneck: typecast. When using the binary version from the MATLAB directory, speed-ups up to 300% can be experienced.
+            However this binary version is in a private directory, so cannot be called directly. Also it depends on the OS, CPU architecture
+            and MATLAB version used. So, the only solution: We copy those binary files to our own toolboxes private directory.
+         </p>
+         <p>The script asks the user for permission and performs the file actions automatically. After each step the results will be checked
+            to avoid a corrupt toolbox.
+         </p>
+         <p>During the process, the m-files for the above named functions will be overwritten. This is the reason we provide 2 versions
+            in the private dir, .m.slow (the original with typecast) and .m.fast (optimized version that needs binary typecastc files
+            in the same directory).
+         </p>
+         <h2>Example<a name="11"></a></h2><pre class="codeinput">  OptimizeToolboxPerformance
+</pre><h2>See also<a name="13"></a></h2>
+
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2008/09/19
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% OptimizeToolboxPerformance
+% Copies binary versions of typecastc to toolbox for better performance
+%%
+%% Syntax
+% |OptimizeToolboxPerformance|
+%%
+%%
+%% Description
+%%
+% This script automates toolbox optimization. The private functions
+% wordbytes2dec and dec2wordbytes are very frequently called and thus most
+% critical for performance (mostly, but not only CPU load), especially at
+% high packet rates (USB). Profiling shows the bottleneck: typecast.
+% When using the binary version from the MATLAB directory, speed-ups up to
+% 300% can be experienced. However this binary version is in a private
+% directory, so cannot be called directly. Also it depends on the OS, CPU
+% architecture and MATLAB version used. So, the only solution: We copy
+% those binary files to our own toolboxes private directory.
+%%
+% The script asks the user for permission and performs the file actions
+% automatically. After each step the results will be checked to avoid a
+% corrupt toolbox.
+%%
+% During the process, the m-files for the above named functions will be
+% overwritten. This is the reason we provide 2 versions in the private dir,
+% .m.slow (the original with typecast) and .m.fast (optimized version that
+% needs binary typecastc files in the same directory).
+%%
+%%
+%% Example
+  OptimizeToolboxPerformance
+%%
+%% See also
+%
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf (see AUTHORS)
+% * *Date:* 2008/09/19
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

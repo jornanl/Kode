@@ -1,0 +1,22 @@
+function shortestPathVector = computeShortestPath(globalMap,myRobotPath)
+%COMPUTESHORTESTPATH Summary of this function goes here
+%   Detailed explanation goes here
+
+Q = globalMap;
+mapVector = createMapVector(Q);
+
+[A,ri,rf,xOffset,yOffset] = createMapMatrix(mapVector,Q,myRobotPath);
+shortestPath = findShpath(A,ri,rf);
+waypoints = findWaypoints(shortestPath,ri);
+shortestPathVector = convToOrgCoordinates(waypoints,xOffset,yOffset,size(A,1));
+
+% Creating x and y vector
+x = [];
+y = [];
+for i=1:2:size(shortestPathVector,2)
+    x = [x shortestPathVector(i)];
+    y = [y shortestPathVector(i+1)];
+end
+% figure
+plot(x,y)
+end

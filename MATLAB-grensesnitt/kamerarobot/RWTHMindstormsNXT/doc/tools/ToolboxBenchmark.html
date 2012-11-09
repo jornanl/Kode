@@ -1,0 +1,477 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>ToolboxBenchmark</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="ToolboxBenchmark">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Tool: RWTH - Mindstorms NXT Toolbox Benchmark</a></li>
+               <li><a href="#3">Clean up previous handles</a></li>
+               <li><a href="#4">Set up Matlab</a></li>
+               <li><a href="#5">Set up ports</a></li>
+               <li><a href="#6">Connect to NXT</a></li>
+               <li><a href="#7">Close all sensors to be sure</a></li>
+               <li><a href="#8">Open Sensors</a></li>
+               <li><a href="#9">Stop and reset all motors</a></li>
+               <li><a href="#10">Call test functions to load them into memory</a></li>
+               <li><a href="#11">Estimate speed for later test</a></li>
+               <li><a href="#12">Actual benchmarking begins</a></li>
+               <li><a href="#13">Clean up</a></li>
+               <li><a href="#14"><b>*</b>* NESTED FUNCTIONS <b>*</b>*</a></li>
+            </ul>
+         </div>
+         <h2>Tool: RWTH - Mindstorms NXT Toolbox Benchmark<a name="1"></a></h2>
+         <p>This script calls and times some basic toolbox functions, so it can be used to get a rough idea of the machine's speed or
+            to compare different methods of communication (USB and Bluetooth)
+         </p><pre class="codeinput"><span class="keyword">function</span> ToolboxBenchmark()
+</pre><h2>Clean up previous handles<a name="3"></a></h2><pre class="codeinput">COM_CloseNXT <span class="string">all</span>
+</pre><h2>Set up Matlab<a name="4"></a></h2><pre class="codeinput">clear <span class="string">all</span> <span class="comment">% if you use clear all, call COM_CloseNXT all before, as we did!</span>
+close <span class="string">all</span>
+format <span class="string">compact</span>
+
+<span class="comment">% get no of logical cpus present</span>
+import <span class="string">java.lang.*</span>;
+r=Runtime.getRuntime;
+numCPUs= r.availableProcessors;
+
+
+disp(<span class="string">' '</span>)
+disp(<span class="string">'*** RWTH - Mindstorms NXT Toolbox Benchmark'</span>)
+<span class="keyword">if</span> ispc; OS = <span class="string">'Windows'</span>; <span class="keyword">else</span> OS = <span class="string">'Linux'</span>; <span class="keyword">end</span>
+rwthver  = ver(<span class="string">'RWTHMindstormsNXT'</span>);
+disp([<span class="string">'    Toolbox version: '</span> rwthver.Version])
+disp([<span class="string">'    MATLAB version:  '</span> version])
+disp([<span class="string">'    Running on '</span> OS <span class="string">' ('</span> sprintf(<span class="string">'%d'</span>,numCPUs) <span class="string">' CPUs), '</span> datestr(now)])
+</pre><h2>Set up ports<a name="5"></a></h2><pre class="codeinput">portLight   = SENSOR_1;
+portSound   = SENSOR_2;
+portSwitch  = SENSOR_3;
+portUS      = SENSOR_4;
+portMotor   = MOTOR_A;
+portMotor2  = MOTOR_B;
+</pre><h2>Connect to NXT<a name="6"></a></h2><pre class="codeinput">h = COM_OpenNXTEx(<span class="string">'Any'</span>, <span class="string">''</span>, <span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_SetDefaultNXT(h);
+
+disp([<span class="string">'    Connection type is '</span> h.ConnectionTypeName])
+
+
+
+fprintf(<span class="string">'Preparing benchmark... '</span>);
+</pre><h2>Close all sensors to be sure<a name="7"></a></h2><pre class="codeinput"><span class="keyword">for</span> j = 0 : 3
+    CloseSensor(j);
+<span class="keyword">end</span><span class="comment">%for</span>
+</pre><h2>Open Sensors<a name="8"></a></h2><pre class="codeinput">OpenLight(portLight, <span class="string">'active'</span>);
+OpenSound(portSound, <span class="string">'db'</span>);
+OpenSwitch(portSwitch);
+OpenUltrasonic(portUS);
+</pre><h2>Stop and reset all motors<a name="9"></a></h2><pre class="codeinput">StopMotor <span class="string">all</span> <span class="string">off</span>
+<span class="keyword">for</span> j = 0 : 2
+    <span class="comment">% reset both absolute and relative positions</span>
+    NXT_ResetMotorPosition(j, false);
+    NXT_ResetMotorPosition(j, true);
+<span class="keyword">end</span><span class="comment">%for</span>
+</pre><h2>Call test functions to load them into memory<a name="10"></a></h2><pre class="codeinput">TestLight;
+TestSound;
+TestSwitch;
+TestUS;
+TestMotorRead;
+
+fprintf(<span class="string">'done.\n'</span>)
+</pre><h2>Estimate speed for later test<a name="11"></a></h2><pre class="codeinput">fprintf(<span class="string">'Estimating speed... '</span>);
+
+EstimatingTime = 3; <span class="comment">% in sec</span>
+<span class="keyword">if</span> h.ConnectionTypeValue == 2 <span class="comment">% BT</span>
+    PacketsPerSec = 15; <span class="comment">%hardcoded BT optimum</span>
+<span class="keyword">else</span>
+    PacketCounter = 0;
+    tic
+    <span class="keyword">while</span>(toc &lt; EstimatingTime)
+        TestMotorRead;
+        PacketCounter = PacketCounter + 1;
+    <span class="keyword">end</span><span class="comment">%while</span>
+    PacketsPerSec = PacketCounter / EstimatingTime;
+<span class="keyword">end</span><span class="comment">%if</span>
+
+
+
+fprintf([<span class="string">'done. (%.1f packets/sec)\n'</span>], PacketsPerSec)
+</pre><h2>Actual benchmarking begins<a name="12"></a></h2><pre class="codeinput">TestingTime = 3; <span class="comment">%in sec</span>
+TestingCalls = PacketsPerSec * TestingTime;
+
+
+fprintf(<span class="string">'Starting benchmark, testing time is ~%d sec per unit\n'</span>, TestingTime);
+
+
+fprintf(<span class="string">'- Testing BEEP... '</span>);
+DoBenchmark(@TestBeep, TestingCalls * 3);
+
+fprintf(<span class="string">'- Testing LIGHT... '</span>);
+DoBenchmark(@TestLight, TestingCalls);
+
+fprintf(<span class="string">'- Testing SOUND... '</span>);
+DoBenchmark(@TestSound, TestingCalls);
+
+fprintf(<span class="string">'- Testing SWITCH... '</span>);
+DoBenchmark(@TestSwitch, TestingCalls);
+
+fprintf(<span class="string">'- Testing ULTRASONIC... '</span>);
+DoBenchmark(@TestUS, TestingCalls / 2);
+
+<span class="comment">% for motor read, we let the motor running...</span>
+SetMotor(portMotor)
+    SetPower(20)
+SendMotorSettings
+SetMotor(portMotor2)
+    SetPower(-20)
+SendMotorSettings
+
+fprintf(<span class="string">'- Testing MOTOR READ... '</span>);
+DoBenchmark(@TestMotorRead, TestingCalls);
+
+StopMotor <span class="string">all</span> <span class="string">off</span>
+
+fprintf(<span class="string">'- Testing MOTOR WRITE... '</span>);
+DoBenchmark(@TestMotorWrite, TestingCalls);
+
+StopMotor <span class="string">all</span> <span class="string">off</span>
+</pre><h2>Clean up<a name="13"></a></h2>
+         <p>Close all sensors</p><pre class="codeinput"><span class="keyword">for</span> j = 0 : 3
+    CloseSensor(j);
+<span class="keyword">end</span><span class="comment">%for</span>
+
+COM_CloseNXT(h);
+</pre><h2><b>*</b>* NESTED FUNCTIONS <b>*</b>*<a name="14"></a></h2><pre class="codeinput">    <span class="keyword">function</span> DoBenchmark(func, times)
+
+        startCPU = cputime;
+        tic;
+        <span class="keyword">for</span> zzz = 1 : times <span class="comment">% dont need index, avoid confusion with outer func</span>
+            func();
+        <span class="keyword">end</span><span class="comment">%for</span>
+        cpuTaken = cputime - startCPU;
+        timeTaken = toc;
+
+        timePerCall = timeTaken / times;
+        callsPerSec = times / timeTaken;
+
+        cpuLoad = cpuTaken / timeTaken;
+        threadLoad = cpuLoad * numCPUs;
+
+
+        fprintf(<span class="string">'done.     (took %.1f secs)\n'</span>, toc);
+        fprintf(<span class="string">'  Calls/sec: %.2f\n'</span>, callsPerSec);
+        fprintf(<span class="string">'  Time/call: %.1f ms\n'</span>, timePerCall * 1000);
+        fprintf(<span class="string">'  CPU usage: %.0f%% (thread usage: %.0f%%)\n'</span>,cpuLoad * 100, threadLoad * 100)
+
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestBeep()
+        NXT_PlayTone(fix(rand * 800 + 300), 2);
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestLight()
+        dummy = GetLight(portLight);
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestSound()
+        dummy = GetSound(portSound);
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestSwitch()
+        dummy = GetSwitch(portSwitch);
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestUS()
+        dummy = GetUltrasonic(portUS);
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestMotorRead
+        <span class="comment">% randomly use different motors</span>
+        <span class="keyword">if</span> rand &gt; 0.5
+            dummy = GetMotorSettings(portMotor);
+        <span class="keyword">else</span>
+            dummy = GetMotorSettings(portMotor2);
+        <span class="keyword">end</span><span class="comment">%if</span>
+    <span class="keyword">end</span><span class="comment">%function</span>
+
+    <span class="keyword">function</span> TestMotorWrite
+        <span class="comment">% randomly use different motors and settings</span>
+        <span class="keyword">if</span> rand &gt; 0.5
+            SetMotor(portMotor)
+                SetPower(45)
+                SpeedRegulation <span class="string">on</span>
+                SetAngleLimit(3446)
+                SetRampMode <span class="string">down</span>
+            SendMotorSettings
+        <span class="keyword">else</span>
+            SetMotor(portMotor2)
+                SetPower(-80)
+                SpeedRegulation <span class="string">off</span>
+                SetAngleLimit <span class="string">off</span>
+                SetRampMode <span class="string">up</span>
+            SendMotorSettings
+        <span class="keyword">end</span><span class="comment">%if</span>
+
+    <span class="keyword">end</span><span class="comment">%function</span>
+</pre><pre class="codeinput"><span class="keyword">end</span><span class="comment">%function</span>
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Tool: RWTH - Mindstorms NXT Toolbox Benchmark
+% This script calls and times some basic toolbox functions,
+% so it can be used to get a rough idea of the machine's speed or to
+% compare different methods of communication (USB and Bluetooth)
+
+function ToolboxBenchmark()
+
+
+%% Clean up previous handles
+COM_CloseNXT all
+
+%% Set up Matlab
+clear all % if you use clear all, call COM_CloseNXT all before, as we did!
+close all
+format compact
+
+% get no of logical cpus present
+import java.lang.*;
+r=Runtime.getRuntime;
+numCPUs= r.availableProcessors;
+
+
+disp(' ')
+disp('*** RWTH - Mindstorms NXT Toolbox Benchmark')
+if ispc; OS = 'Windows'; else OS = 'Linux'; end
+rwthver  = ver('RWTHMindstormsNXT');
+disp(['    Toolbox version: ' rwthver.Version])
+disp(['    MATLAB version:  ' version])
+disp(['    Running on ' OS ' (' sprintf('%d',numCPUs) ' CPUs), ' datestr(now)])
+
+
+
+
+%% Set up ports
+
+portLight   = SENSOR_1;
+portSound   = SENSOR_2;
+portSwitch  = SENSOR_3;
+portUS      = SENSOR_4;
+portMotor   = MOTOR_A;
+portMotor2  = MOTOR_B;
+ 
+
+%% Connect to NXT
+
+h = COM_OpenNXTEx('Any', '', 'bluetooth.ini', 'check');
+COM_SetDefaultNXT(h);
+
+disp(['    Connection type is ' h.ConnectionTypeName])
+
+
+
+fprintf('Preparing benchmark... ');
+
+%% Close all sensors to be sure
+for j = 0 : 3
+    CloseSensor(j);
+end%for
+
+%% Open Sensors
+OpenLight(portLight, 'active');
+OpenSound(portSound, 'db');
+OpenSwitch(portSwitch);
+OpenUltrasonic(portUS);
+
+%% Stop and reset all motors
+StopMotor all off
+for j = 0 : 2
+    % reset both absolute and relative positions
+    NXT_ResetMotorPosition(j, false);
+    NXT_ResetMotorPosition(j, true);
+end%for
+
+
+%% Call test functions to load them into memory
+TestLight;
+TestSound;
+TestSwitch;
+TestUS;
+TestMotorRead;
+
+fprintf('done.\n')
+
+
+%% Estimate speed for later test
+fprintf('Estimating speed... ');
+
+EstimatingTime = 3; % in sec
+if h.ConnectionTypeValue == 2 % BT
+    PacketsPerSec = 15; %hardcoded BT optimum
+else
+    PacketCounter = 0;
+    tic
+    while(toc < EstimatingTime)
+        TestMotorRead;
+        PacketCounter = PacketCounter + 1;
+    end%while
+    PacketsPerSec = PacketCounter / EstimatingTime;
+end%if
+
+
+
+fprintf(['done. (%.1f packets/sec)\n'], PacketsPerSec)
+
+
+
+%% Actual benchmarking begins
+TestingTime = 3; %in sec
+TestingCalls = PacketsPerSec * TestingTime;
+
+
+fprintf('Starting benchmark, testing time is ~%d sec per unit\n', TestingTime);
+
+
+fprintf('- Testing BEEP... ');
+DoBenchmark(@TestBeep, TestingCalls * 3);
+
+fprintf('- Testing LIGHT... ');
+DoBenchmark(@TestLight, TestingCalls);
+
+fprintf('- Testing SOUND... ');
+DoBenchmark(@TestSound, TestingCalls);
+ 
+fprintf('- Testing SWITCH... ');
+DoBenchmark(@TestSwitch, TestingCalls);
+
+fprintf('- Testing ULTRASONIC... ');
+DoBenchmark(@TestUS, TestingCalls / 2);
+
+% for motor read, we let the motor running...
+SetMotor(portMotor)
+    SetPower(20)
+SendMotorSettings
+SetMotor(portMotor2)
+    SetPower(-20)
+SendMotorSettings
+
+fprintf('- Testing MOTOR READ... ');
+DoBenchmark(@TestMotorRead, TestingCalls);
+
+StopMotor all off
+
+fprintf('- Testing MOTOR WRITE... ');
+DoBenchmark(@TestMotorWrite, TestingCalls);
+
+StopMotor all off
+
+
+%% Clean up
+% Close all sensors
+for j = 0 : 3
+    CloseSensor(j);
+end%for
+
+COM_CloseNXT(h);
+
+
+
+
+
+
+%% **** NESTED FUNCTIONS ****
+
+    function DoBenchmark(func, times)
+        
+        startCPU = cputime;
+        tic;
+        for zzz = 1 : times % dont need index, avoid confusion with outer func
+            func();
+        end%for
+        cpuTaken = cputime - startCPU;
+        timeTaken = toc;
+
+        timePerCall = timeTaken / times;
+        callsPerSec = times / timeTaken;
+        
+        cpuLoad = cpuTaken / timeTaken;
+        threadLoad = cpuLoad * numCPUs;
+        
+        
+        fprintf('done.     (took %.1f secs)\n', toc);
+        fprintf('  Calls/sec: %.2f\n', callsPerSec);
+        fprintf('  Time/call: %.1f ms\n', timePerCall * 1000);
+        fprintf('  CPU usage: %.0f%% (thread usage: %.0f%%)\n',cpuLoad * 100, threadLoad * 100)
+
+    end%function
+
+    function TestBeep()
+        NXT_PlayTone(fix(rand * 800 + 300), 2);
+    end%function
+
+    function TestLight()
+        dummy = GetLight(portLight);
+    end%function
+    
+    function TestSound()
+        dummy = GetSound(portSound);
+    end%function
+
+    function TestSwitch()
+        dummy = GetSwitch(portSwitch);
+    end%function
+
+    function TestUS()
+        dummy = GetUltrasonic(portUS);
+    end%function
+
+    function TestMotorRead
+        % randomly use different motors
+        if rand > 0.5
+            dummy = GetMotorSettings(portMotor);
+        else
+            dummy = GetMotorSettings(portMotor2);
+        end%if
+    end%function
+
+    function TestMotorWrite
+        % randomly use different motors and settings
+        if rand > 0.5
+            SetMotor(portMotor)
+                SetPower(45)
+                SpeedRegulation on
+                SetAngleLimit(3446)
+                SetRampMode down
+            SendMotorSettings
+        else
+            SetMotor(portMotor2)
+                SetPower(-80)
+                SpeedRegulation off
+                SetAngleLimit off
+                SetRampMode up
+            SendMotorSettings
+        end%if
+        
+    end%function
+
+
+end%function
+##### SOURCE END #####
+-->
+   </body>
+</html>

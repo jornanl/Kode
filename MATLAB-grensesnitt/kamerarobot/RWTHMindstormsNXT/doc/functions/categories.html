@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>Functions by Category</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link type="text/css" rel="stylesheet" href="../style.css">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000001">
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+<p align="center">
+<h1>Functions by Category</h1>
+</p>
+
+<table>
+<tr><td colspan="2"><h2>NXT Communication</h2></td></tr>
+<tr><td><a href="./help/COM_CloseNXT.html">COM_CloseNXT</a></td><td>Closes and deletes a specific NXT handle, or clears all existing handles</td></tr>
+<tr><td><a href="./help/COM_CollectPacket.html">COM_CollectPacket</a></td><td>Reads data from a USB or serial/Bluetooth port and retrieves exactly one packet</td></tr>
+<tr><td><a href="./help/COM_CreatePacket.html">COM_CreatePacket</a></td><td>Generates a valid Bluetooth packet ready for transmission (i.e. calculates length)</td></tr>
+<tr><td><a href="./help/COM_GetDefaultNXT.html">COM_GetDefaultNXT</a></td><td>Returns the global default NXT handle if it was previously set</td></tr>
+<tr><td><a href="./help/COM_MakeBTConfigFile.html">COM_MakeBTConfigFile</a></td><td>Creates a Bluetooth configuration file which is needed to open a Bluetooth connection.</td></tr>
+<tr><td><a href="./help/COM_OpenNXT.html">COM_OpenNXT</a></td><td>Opens a USB or Bluetooth connection to an NXT device and returns a handle for future use</td></tr>
+<tr><td><a href="./help/COM_OpenNXTEx.html">COM_OpenNXTEx</a></td><td>Opens a Bluetooth or USB connection to an NXT device and returns a handle for future use</td></tr>
+<tr><td><a href="./help/COM_ReadI2C.html">COM_ReadI2C</a></td><td>Requests and reads sensor data via I2C from a correctly configured digital sensor.</td></tr>
+<tr><td><a href="./help/COM_SendPacket.html">COM_SendPacket</a></td><td>Sends a communication protocol packet (byte-array) via a USB or Bluetooth channel (serial port)</td></tr>
+<tr><td><a href="./help/COM_SetDefaultNXT.html">COM_SetDefaultNXT</a></td><td>Sets a global default NXT handle that will be used by other functions if no handle is specified.</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>NXT Sensors</h2></td></tr>
+<tr><td><a href="./help/CalibrateCompass.html">CalibrateCompass</a></td><td>Enables calibration mode of the HiTechnic compass sensor</td></tr>
+<tr><td><a href="./help/CloseSensor.html">CloseSensor</a></td><td>Closes a specified sensor port (e.g. turns off the active light mode of the NXT light sensor)</td></tr>
+<tr><td><a href="./help/GetAccelerator.html">GetAccelerator</a></td><td>Reads the current value of the HiTechnic acceleration sensor</td></tr>
+<tr><td><a href="./help/GetCompass.html">GetCompass</a></td><td>Reads the current value of the HiTechnic compass sensor</td></tr>
+<tr><td><a href="./help/GetInfrared.html">GetInfrared</a></td><td>Reads the current value of the Hitechnic infrared sensor (infrared seeker)</td></tr>
+<tr><td><a href="./help/GetLight.html">GetLight</a></td><td>Reads the current value of the NXT light sensor</td></tr>
+<tr><td><a href="./help/GetSound.html">GetSound</a></td><td>Reads the current value of the NXT sound sensor</td></tr>
+<tr><td><a href="./help/GetSwitch.html">GetSwitch</a></td><td>Reads the current value of the NXT switch / touch sensor</td></tr>
+<tr><td><a href="./help/GetUltrasonic.html">GetUltrasonic</a></td><td>Reads the current value of the NXT ultrasonic sensor</td></tr>
+<tr><td><a href="./help/OpenAccelerator.html">OpenAccelerator</a></td><td>Initializes and sets the mode of the HiTechnic acceleration sensor</td></tr>
+<tr><td><a href="./help/OpenCompass.html">OpenCompass</a></td><td>Initializes and sets the mode of the HiTechnic magnetic compass sensor</td></tr>
+<tr><td><a href="./help/OpenInfrared.html">OpenInfrared</a></td><td>Initializes and sets the mode of the HiTechnic infrared seeker sensor</td></tr>
+<tr><td><a href="./help/OpenLight.html">OpenLight</a></td><td>Sets the parameter mode of the NXT light sensor</td></tr>
+<tr><td><a href="./help/OpenSound.html">OpenSound</a></td><td>Sets the parameter mode of the NXT sound sensor</td></tr>
+<tr><td><a href="./help/OpenSwitch.html">OpenSwitch</a></td><td>Sets the parameter mode of the NXT switch / touch sensor</td></tr>
+<tr><td><a href="./help/OpenUltrasonic.html">OpenUltrasonic</a></td><td>Initializes and sets the mode of the NXT ultrasonic sensor</td></tr>
+<tr><td><a href="./help/SENSOR_1.html">SENSOR_1</a></td><td>Symbolic constant SENSOR_1 (returns 0)</td></tr>
+<tr><td><a href="./help/SENSOR_2.html">SENSOR_2</a></td><td>Symbolic constant SENSOR_2 (returns 1)</td></tr>
+<tr><td><a href="./help/SENSOR_3.html">SENSOR_3</a></td><td>Symbolic constant SENSOR_3 (returns 2)</td></tr>
+<tr><td><a href="./help/SENSOR_4.html">SENSOR_4</a></td><td>Symbolic constant SENSOR_4 (returns 3)</td></tr>
+<tr><td><a href="./help/USGetSnapshotResults.html">USGetSnapshotResults</a></td><td>Retrieves up to eight echos (distances) stored inside the US sensor</td></tr>
+<tr><td><a href="./help/USMakeSnapshot.html">USMakeSnapshot</a></td><td>Causes the ultrasonic sensor to send one snapshot ("ping") and record the echos</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>NXT Motors</h2></td></tr>
+<tr><td><a href="./help/GetMemoryCount.html">GetMemoryCount</a></td><td>Gets the internal NXT memory counter (manual mapping replica)</td></tr>
+<tr><td><a href="./help/GetMotor.html">GetMotor</a></td><td>Reads the current motor set by SetMotor(). Raises an error if no motor was set</td></tr>
+<tr><td><a href="./help/GetMotorSettings.html">GetMotorSettings</a></td><td>Returns the current motor data / settings (e.g. position, speed, etc.) from the specified motor</td></tr>
+<tr><td><a href="./help/MOTOR_A.html">MOTOR_A</a></td><td>Symbolic constant MOTOR_A (returns 0)</td></tr>
+<tr><td><a href="./help/MOTOR_B.html">MOTOR_B</a></td><td>Symbolic constant MOTOR_B (returns 1)</td></tr>
+<tr><td><a href="./help/MOTOR_C.html">MOTOR_C</a></td><td>Symbolic constant MOTOR_C (returns 2)</td></tr>
+<tr><td><a href="./help/MotorRotateAbs.html">MotorRotateAbs</a></td><td>Rotates a motor to an absolute angle</td></tr>
+<tr><td><a href="./help/ResetMotorAngle.html">ResetMotorAngle</a></td><td>Resets the relative angle counter for the given motor</td></tr>
+<tr><td><a href="./help/SendMotorSettings.html">SendMotorSettings</a></td><td>Sends previously specified settings to current active motor.</td></tr>
+<tr><td><a href="./help/SetAngleLimit.html">SetAngleLimit</a></td><td>Sets the angle limit (in degrees) of the current motor port</td></tr>
+<tr><td><a href="./help/SetMemoryCount.html">SetMemoryCount</a></td><td>Sets the internal NXT memory counter (manual mapping replica)</td></tr>
+<tr><td><a href="./help/SetMotor.html">SetMotor</a></td><td>Sets the current motor to use for motor setting commands</td></tr>
+<tr><td><a href="./help/SetPower.html">SetPower</a></td><td>Sets the power of the current active motor</td></tr>
+<tr><td><a href="./help/SetRampMode.html">SetRampMode</a></td><td>Sets the runstate of the current active motor</td></tr>
+<tr><td><a href="./help/SetTurnRatio.html">SetTurnRatio</a></td><td>Sets the turn ratio of the current active motor</td></tr>
+<tr><td><a href="./help/SpeedRegulation.html">SpeedRegulation</a></td><td>Enables / disables the speed regulation mode of the current active motor</td></tr>
+<tr><td><a href="./help/StopMotor.html">StopMotor</a></td><td>Stops / brakes specified motor. (Synchronisation will be lost after this)</td></tr>
+<tr><td><a href="./help/SwitchLamp.html">SwitchLamp</a></td><td>Switches the LEGO lamp on or off (has to be connected to a motor port)</td></tr>
+<tr><td><a href="./help/SyncToMotor.html">SyncToMotor</a></td><td>Enables synchronization regulation for current active and specified motor</td></tr>
+<tr><td><a href="./help/WaitForMotor.html">WaitForMotor</a></td><td>Pauses execution until specific motor is not running anymore.</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>Direct NXT Functions</h2></td></tr>
+<tr><td><a href="./help/NXT_GetBatteryLevel.html">NXT_GetBatteryLevel</a></td><td>Returns the current battery level in milli volts</td></tr>
+<tr><td><a href="./help/NXT_GetFirmwareVersion.html">NXT_GetFirmwareVersion</a></td><td>Returns the protocol and firmware version of the NXT</td></tr>
+<tr><td><a href="./help/NXT_GetInputValues.html">NXT_GetInputValues</a></td><td>Processes a complete sensor reading, i.e. requests input values and collects the answer.</td></tr>
+<tr><td><a href="./help/NXT_GetOutputState.html">NXT_GetOutputState</a></td><td>Requests and retrieves an output motor state reading</td></tr>
+<tr><td><a href="./help/NXT_LSGetStatus.html">NXT_LSGetStatus</a></td><td>Gets the number of available bytes from low speed (digital) sensor (e.g. ultrasonic)</td></tr>
+<tr><td><a href="./help/NXT_LSRead.html">NXT_LSRead</a></td><td>Reads data from a low speed (digital) sensor</td></tr>
+<tr><td><a href="./help/NXT_LSWrite.html">NXT_LSWrite</a></td><td>Writes the given data to a low speed (digital) sensor</td></tr>
+<tr><td><a href="./help/NXT_MessageWrite.html">NXT_MessageWrite</a></td><td>Sends a message to NXT</td></tr>
+<tr><td><a href="./help/NXT_PlaySoundFile.html">NXT_PlaySoundFile</a></td><td>Plays the given sound file on the NXT Brick</td></tr>
+<tr><td><a href="./help/NXT_PlayTone.html">NXT_PlayTone</a></td><td>Plays a tone with the given frequency and duration</td></tr>
+<tr><td><a href="./help/NXT_ReadIOMap.html">NXT_ReadIOMap</a></td><td>Reads the IO map of the given module ID</td></tr>
+<tr><td><a href="./help/NXT_ResetInputScaledValue.html">NXT_ResetInputScaledValue</a></td><td>Resets the sensors ScaledVal back to 0, depends on currently configured mode (see NXT_SetInputMode)</td></tr>
+<tr><td><a href="./help/NXT_ResetMotorPosition.html">NXT_ResetMotorPosition</a></td><td>Resets NXT internal counter for specified motor, relative or absolute counter</td></tr>
+<tr><td><a href="./help/NXT_SendKeepAlive.html">NXT_SendKeepAlive</a></td><td>Sends a KeepAlive packet. Optional: requests sleep time limit.</td></tr>
+<tr><td><a href="./help/NXT_SetBrickName.html">NXT_SetBrickName</a></td><td>Sets a new name for the NXT Brick (connected to the specified handle)</td></tr>
+<tr><td><a href="./help/NXT_SetInputMode.html">NXT_SetInputMode</a></td><td>Sets mode, configures and initializes sensor ready to be read out</td></tr>
+<tr><td><a href="./help/NXT_SetOutputState.html">NXT_SetOutputState</a></td><td>Sends previously specified settings to current active motor.</td></tr>
+<tr><td><a href="./help/NXT_StartProgram.html">NXT_StartProgram</a></td><td>Starts the given program on the NXT Brick</td></tr>
+<tr><td><a href="./help/NXT_StopProgram.html">NXT_StopProgram</a></td><td>Stops a specific program on the NXT Brick</td></tr>
+<tr><td><a href="./help/NXT_StopSoundPlayback.html">NXT_StopSoundPlayback</a></td><td>Stops the current sound playback</td></tr>
+<tr><td><a href="./help/NXT_WriteIOMap.html">NXT_WriteIOMap</a></td><td>Writes the IO map to the given module ID</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>NXT Module Map Functions</h2></td></tr>
+<tr><td><a href="./help/MAP_GetCommModule.html">MAP_GetCommModule</a></td><td>Reads the IO map of the communication module</td></tr>
+<tr><td><a href="./help/MAP_GetInputModule.html">MAP_GetInputModule</a></td><td>Reads the IO map of the input module</td></tr>
+<tr><td><a href="./help/MAP_GetOutputModule.html">MAP_GetOutputModule</a></td><td>Reads the IO map of the output module</td></tr>
+<tr><td><a href="./help/MAP_GetSoundModule.html">MAP_GetSoundModule</a></td><td>Reads the IO map of the sound module</td></tr>
+<tr><td><a href="./help/MAP_GetUIModule.html">MAP_GetUIModule</a></td><td>Reads the IO map of the user interface module</td></tr>
+<tr><td><a href="./help/MAP_SetOutputModule.html">MAP_SetOutputModule</a></td><td>Writes the IO map to the output module</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>General Functions</h2></td></tr>
+<tr><td><a href="./help/checkStatusByte.html">checkStatusByte</a></td><td>Interpretes the status byte of a return package and creates an error message</td></tr>
+<tr><td><a href="./help/OptimizeToolboxPerformance.html">OptimizeToolboxPerformance</a></td><td>Copies binary versions of typecastc to toolbox for better performance</td></tr>
+<tr><td><a href="./help/readFromIniFile.html">readFromIniFile</a></td><td>Reads parameters from a configuration file (usually *.ini)</td></tr>
+<tr><td><a href="./help/textOut.html">textOut</a></td><td>Wrapper for fprintf() which can optionally write screen output to a logfile</td></tr>
+<tr><td><a href="./help/tictic.html">tictic</a></td><td>Similar to MATLAB's tic(), but extended to save "more states"</td></tr>
+<tr><td><a href="./help/toctoc.html">toctoc</a></td><td>Similar to MATLAB's toc(), but extended to save "more states"</td></tr>
+<tr><td><br><br></td></tr>
+
+
+<tr><td colspan="2"><h2>Debug Functions</h2></td></tr>
+<tr><td><a href="./help/DebugMode.html">DebugMode</a></td><td>Gets or sets the debug state (i.e. if textOut will print messages to the command window)</td></tr>
+<tr><td><br><br></td></tr>
+
+
+</table>
+
+</body>
+</html>

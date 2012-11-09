@@ -1,0 +1,348 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Example_6_ShinyRadar</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="Example_6_ShinyRadar">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Example 6: ShinyRadar</a></li>
+               <li><a href="#3">Clean up previous handles</a></li>
+               <li><a href="#4">Set up Matlab</a></li>
+               <li><a href="#5">Set up ports &amp; vars</a></li>
+               <li><a href="#6">Initialize GFX</a></li>
+               <li><a href="#7">Open connection</a></li>
+               <li><a href="#8">Reset Motor, open sensor</a></li>
+               <li><a href="#9">Turn right so start position</a></li>
+               <li><a href="#10">First motor go</a></li>
+               <li><a href="#11">Main loop</a></li>
+               <li><a href="#12">Clean up</a></li>
+               <li><a href="#15">Plot Radar outlines</a></li>
+            </ul>
+         </div>
+         <h2>Example 6: ShinyRadar<a name="1"></a></h2>
+         <p>This function provides a live moving ultrasonic radar.</p><pre class="codeinput"><span class="keyword">function</span> ShinyRadar
+</pre><h2>Clean up previous handles<a name="3"></a></h2><pre class="codeinput">COM_CloseNXT <span class="string">all</span>
+</pre><h2>Set up Matlab<a name="4"></a></h2><pre class="codeinput">clear <span class="string">all</span> <span class="comment">% if you use clear all, call COM_CloseNXT all before, as we did!</span>
+close <span class="string">all</span>
+format <span class="string">compact</span>
+</pre><h2>Set up ports &amp; vars<a name="5"></a></h2><pre class="codeinput">portMotor   = MOTOR_A;
+portUS      = SENSOR_4;
+GearFactor  = 4;
+MotorRange  = 170 * GearFactor;
+MotorSpeed  = 25;
+</pre><h2>Initialize GFX<a name="6"></a></h2><pre class="codeinput">figure(<span class="string">'Name'</span>, <span class="string">'Shiny Radar'</span>); <span class="comment">%, 'Position', [50 60 1200 500]);</span>
+axis <span class="string">equal</span>
+axis([-170 170 0 170]);
+set(gca, <span class="string">'Color'</span>, <span class="string">'black'</span>);
+hold <span class="string">on</span>
+
+
+hScanLine = ResetFigure(false);
+</pre><h2>Open connection<a name="7"></a></h2><pre class="codeinput">h = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_SetDefaultNXT(h);
+</pre><h2>Reset Motor, open sensor<a name="8"></a></h2><pre class="codeinput">StopMotor <span class="string">all</span> <span class="string">off</span>
+NXT_ResetMotorPosition(portMotor, false);
+NXT_ResetMotorPosition(portMotor, true);
+
+OpenUltrasonic(portUS);
+</pre><h2>Turn right so start position<a name="9"></a></h2><pre class="codeinput">SetMotor(portMotor)
+    SetPower(20)
+    SetAngleLimit(MotorRange/2 - 20)
+SendMotorSettings
+WaitForMotor(portMotor)
+pause(0.5)
+StopMotor(portMotor, <span class="string">'off'</span>);
+</pre><h2>First motor go<a name="10"></a></h2><pre class="codeinput">tmp = GetMotorSettings(portMotor);
+StartPos = tmp.TachoCount;
+
+SetMotor(portMotor);
+    SetPower(-MotorSpeed);
+    SpeedRegulation <span class="string">on</span>
+    SetAngleLimit(MotorRange);
+SendMotorSettings
+</pre><h2>Main loop<a name="11"></a></h2><pre class="codeinput"><span class="keyword">while</span>(true)
+
+    <span class="comment">% get current pos</span>
+    tmp = GetMotorSettings(portMotor);
+    CurPos = tmp.TachoCount;
+    phi = pi - ((CurPos - (StartPos - MotorRange)) / MotorRange) * pi;
+    <span class="comment">%alpha = phi * 180 / pi</span>
+    <span class="comment">%x = cos(phi)</span>
+    <span class="comment">%y = sin(phi)</span>
+
+    <span class="comment">% get ultrasonic</span>
+    distUS = GetUltrasonic(portUS);
+
+
+    <span class="comment">% plot where we are</span>
+    set(hScanLine, <span class="string">'XData'</span>, [0; cos(phi) * 150])
+    set(hScanLine, <span class="string">'YData'</span>, [0; sin(phi) * 150]);
+
+    <span class="comment">% plot radar dot</span>
+    <span class="keyword">if</span> (distUS &gt; 1) &amp;&amp; (distUS &lt; 200)
+        plot(cos(phi) * distUS, sin(phi) * distUS, <span class="string">'g.'</span>)
+    <span class="keyword">end</span><span class="comment">%if</span>
+
+
+    drawnow
+
+    <span class="comment">% reverse direction if necessary</span>
+    <span class="keyword">if</span> CurPos &lt; (StartPos - MotorRange)
+        StopMotor(portMotor, <span class="string">'off'</span>)
+        NXT_ResetMotorPosition(portMotor, false);
+        NXT_ResetMotorPosition(portMotor, true);
+
+        SetMotor(portMotor)
+            SetPower(MotorSpeed)
+            SetAngleLimit(MotorRange)
+        SendMotorSettings
+
+        hScanLine = ResetFigure(true);
+    <span class="keyword">end</span><span class="comment">%if</span>
+
+    <span class="comment">% reverse direction if necessary</span>
+    <span class="keyword">if</span> CurPos &gt; StartPos
+        StopMotor(portMotor, <span class="string">'off'</span>)
+        NXT_ResetMotorPosition(portMotor, false);
+        NXT_ResetMotorPosition(portMotor, true);
+        SetMotor(portMotor)
+            SetPower(-MotorSpeed)
+            SetAngleLimit(MotorRange)
+        SendMotorSettings
+
+        hScanLine = ResetFigure(false);
+    <span class="keyword">end</span><span class="comment">%if</span>
+
+
+
+<span class="keyword">end</span><span class="comment">%while</span>
+</pre><h2>Clean up<a name="12"></a></h2><pre class="codeinput">StopMotor <span class="string">all</span> <span class="string">off</span>
+CloseSensor(portUS);
+
+COM_CloseNXT(h)
+</pre><pre class="codeinput"><span class="keyword">end</span><span class="comment">%function</span>
+
+
+<span class="keyword">function</span> hScanNew = ResetFigure(leftTrue)
+</pre><pre class="codeinput">    cla
+</pre><h2>Plot Radar outlines<a name="15"></a></h2><pre class="codeinput">    <span class="comment">% circles</span>
+    col = [0.3 0.3 0.3];
+    <span class="keyword">for</span> j = 1 : 3
+        phi = linspace(0, pi, 60) ;<span class="comment">% - pi;</span>
+        x = cos(phi) * 50 * j;
+        y = sin(phi) * 50 * j;
+        plot(x, y, <span class="string">'-'</span>, <span class="string">'Color'</span>, col)
+    <span class="keyword">end</span><span class="comment">%for</span>
+
+    <span class="comment">% lines</span>
+    len = 160;
+    plot([0; cos(pi/4)*len], [0; sin(pi/4)*len], <span class="string">'-'</span>, <span class="string">'Color'</span>, col)
+    plot([0; 0], [0; len], <span class="string">'-'</span>, <span class="string">'Color'</span>, col)
+    plot([0; -cos(pi/4)*len], [0; sin(pi/4)*len], <span class="string">'-'</span>, <span class="string">'Color'</span>, col)
+
+    <span class="comment">% draw scanline again:</span>
+    <span class="keyword">if</span> leftTrue
+        hScanNew = plot([0; -150], [0; 0], <span class="string">'-r'</span>);
+    <span class="keyword">else</span>
+        hScanNew = plot([0; 150], [0; 0], <span class="string">'-r'</span>);
+    <span class="keyword">end</span><span class="comment">%if</span>
+
+
+    drawnow
+</pre><pre class="codeinput"><span class="keyword">end</span><span class="comment">%function</span>
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Example 6: ShinyRadar
+% This function provides a live moving ultrasonic radar.
+
+
+function ShinyRadar
+
+%% Clean up previous handles
+COM_CloseNXT all
+
+%% Set up Matlab
+clear all % if you use clear all, call COM_CloseNXT all before, as we did!
+close all
+format compact
+
+
+%% Set up ports & vars
+portMotor   = MOTOR_A;
+portUS      = SENSOR_4;
+GearFactor  = 4;
+MotorRange  = 170 * GearFactor;
+MotorSpeed  = 25;
+
+
+%% Initialize GFX
+figure('Name', 'Shiny Radar'); %, 'Position', [50 60 1200 500]);
+axis equal
+axis([-170 170 0 170]); 
+set(gca, 'Color', 'black');
+hold on
+
+
+hScanLine = ResetFigure(false);
+
+
+
+%% Open connection
+h = COM_OpenNXT('bluetooth.ini', 'check');
+COM_SetDefaultNXT(h);
+
+
+%% Reset Motor, open sensor
+StopMotor all off
+NXT_ResetMotorPosition(portMotor, false);
+NXT_ResetMotorPosition(portMotor, true);
+
+OpenUltrasonic(portUS);
+
+%% Turn right so start position
+SetMotor(portMotor)
+    SetPower(20)
+    SetAngleLimit(MotorRange/2 - 20)
+SendMotorSettings
+WaitForMotor(portMotor)
+pause(0.5)
+StopMotor(portMotor, 'off');
+
+
+%% First motor go
+tmp = GetMotorSettings(portMotor);
+StartPos = tmp.TachoCount;
+
+SetMotor(portMotor);
+    SetPower(-MotorSpeed);
+    SpeedRegulation on
+    SetAngleLimit(MotorRange);
+SendMotorSettings
+
+
+
+%% Main loop
+while(true)
+    
+    % get current pos
+    tmp = GetMotorSettings(portMotor);
+    CurPos = tmp.TachoCount;
+    phi = pi - ((CurPos - (StartPos - MotorRange)) / MotorRange) * pi;
+    %alpha = phi * 180 / pi
+    %x = cos(phi)
+    %y = sin(phi)
+    
+    % get ultrasonic
+    distUS = GetUltrasonic(portUS);
+
+    
+    % plot where we are
+    set(hScanLine, 'XData', [0; cos(phi) * 150])
+    set(hScanLine, 'YData', [0; sin(phi) * 150]);
+    
+    % plot radar dot
+    if (distUS > 1) && (distUS < 200)
+        plot(cos(phi) * distUS, sin(phi) * distUS, 'g.')
+    end%if
+    
+    
+    drawnow
+    
+    % reverse direction if necessary
+    if CurPos < (StartPos - MotorRange)
+        StopMotor(portMotor, 'off')
+        NXT_ResetMotorPosition(portMotor, false);
+        NXT_ResetMotorPosition(portMotor, true);
+
+        SetMotor(portMotor)
+            SetPower(MotorSpeed)
+            SetAngleLimit(MotorRange)
+        SendMotorSettings
+        
+        hScanLine = ResetFigure(true);
+    end%if
+    
+    % reverse direction if necessary
+    if CurPos > StartPos
+        StopMotor(portMotor, 'off')
+        NXT_ResetMotorPosition(portMotor, false);
+        NXT_ResetMotorPosition(portMotor, true);
+        SetMotor(portMotor)
+            SetPower(-MotorSpeed)
+            SetAngleLimit(MotorRange)
+        SendMotorSettings
+        
+        hScanLine = ResetFigure(false);
+    end%if    
+    
+    
+
+end%while
+
+
+
+%% Clean up
+StopMotor all off
+CloseSensor(portUS);
+
+COM_CloseNXT(h)
+
+
+end%function
+
+
+function hScanNew = ResetFigure(leftTrue)
+
+    cla
+
+%% Plot Radar outlines
+
+    % circles
+    col = [0.3 0.3 0.3];
+    for j = 1 : 3
+        phi = linspace(0, pi, 60) ;% - pi;
+        x = cos(phi) * 50 * j;
+        y = sin(phi) * 50 * j;
+        plot(x, y, '-', 'Color', col)
+    end%for
+
+    % lines
+    len = 160;
+    plot([0; cos(pi/4)*len], [0; sin(pi/4)*len], '-', 'Color', col)
+    plot([0; 0], [0; len], '-', 'Color', col)
+    plot([0; -cos(pi/4)*len], [0; sin(pi/4)*len], '-', 'Color', col)
+
+    % draw scanline again:
+    if leftTrue
+        hScanNew = plot([0; -150], [0; 0], '-r');
+    else
+        hScanNew = plot([0; 150], [0; 0], '-r');
+    end%if
+
+
+    drawnow
+end%function
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

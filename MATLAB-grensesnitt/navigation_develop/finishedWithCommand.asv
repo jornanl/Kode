@@ -1,0 +1,11 @@
+function [myError, outData] = finishedWithCommand()
+
+myError = 1;
+outData = 0;
+analogData = [];
+
+
+if strcmp(SerialLink,'simulator'),
+    disp('Cannot calibrate IR sensors in simulation mode');
+
+else

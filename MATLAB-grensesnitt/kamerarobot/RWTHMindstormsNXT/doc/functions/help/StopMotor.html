@@ -1,0 +1,131 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>StopMotor</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="script_StopMotor">
+<link type="text/css" rel="stylesheet" href="../../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>StopMotor</h1>
+         <introduction>
+            <p>Stops / brakes specified motor. (Synchronisation will be lost after this)</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#2">Syntax</a></li>
+               <li><a href="#5">Description</a></li>
+               <li><a href="#13">Example</a></li>
+               <li><a href="#15">See also</a></li>
+               <li><a href="#17">Signature</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="2"></a></h2>
+         <p><tt>StopMotor(port, mode)</tt></p>
+         <p><tt>StopMotor(port, mode, handle)</tt></p>
+         <h2>Description<a name="5"></a></h2>
+         <p><tt>StopMotor(port, mode)</tt> stops the motor connected to the given <tt>port</tt>. The value <tt>port</tt> can be addressed by the symbolic constants <tt>MOTOR_A</tt>, <tt>MOTOR_B</tt>, <tt>MOTOR_C</tt> and <tt>'all'</tt> (all motor at at the same time) analog to the labeling on the NXT Brick. The argument <tt>mode</tt> can be equal to <tt>'off'</tt> which cuts off the electrical power to the specific motor, so called "COAST" mode. The option <tt>'brake'</tt> will actively halt the motor at the current position (until the next command).
+         </p>
+         <p>The last optional argument can be a valid NXT handle. If none is specified, the default handle will be used (call <tt>COM_SetDefaultNXT</tt> to set one).
+         </p>
+         <p><b>Note:</b></p>
+         <p>The value <tt>port</tt> equal to <tt>'all'</tt> can be used to stopp all motors at the same time using only one single Bluetooth packet. After a <tt>StopMotor</tt> command the motor snychronization will be lost.
+         </p>
+         <p>With <tt>mode</tt> equal to <tt>'off'</tt>, the motor will slowly stop spinning, but using <tt>'brake'</tt> applies real force to the motor to stand still at the current position, just like a real brake.
+         </p>
+         <p>When calling <tt>StopMotor(..., 'off')</tt>, you also internally issue the commands <tt>SpeedRegulation('off')</tt> and <tt>SyncToMotor('off')</tt>, while using  <tt>'brake'</tt> will call <tt>SpeedRegulation('on')</tt> and <tt>SyncToMotor('off')</tt>.
+         </p>
+         <h2>Example<a name="13"></a></h2><pre class="codeinput">   SetMotor(MOTOR_B);
+   	SetPower(-55);
+   	SetAngleLimit(1200);
+   SendMotorSettings();
+
+   WaitForMotor(MOTOR_A);
+
+   StopMotor(MOTOR_B, <span class="string">'brake'</span>);
+</pre><h2>See also<a name="15"></a></h2>
+         <p><a href="WaitForMotor.html">WaitForMotor</a>, <a href="SendMotorSettings.html">SendMotorSettings</a>, <a href="MOTOR_A.html">MOTOR_A</a>, <a href="MOTOR_B.html">MOTOR_B</a>, <a href="MOTOR_C.html">MOTOR_C</a></p>
+         <h2>Signature<a name="17"></a></h2>
+         <div>
+            <ul>
+               <li><b>Author:</b> Linus Atorf, Alexander Behrens (see AUTHORS)
+               </li>
+               <li><b>Date:</b> 2007/10/15
+               </li>
+               <li><b>Copyright:</b> 2007-2008, RWTH Aachen University
+               </li>
+            </ul>
+         </div>
+         <p class="footer"><br>
+            Published with wg_publish; V1.0<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% StopMotor
+% Stops / brakes specified motor. (Synchronisation will be lost after this)
+%%
+%% Syntax
+% |StopMotor(port, mode)|
+%%
+% |StopMotor(port, mode, handle)|
+%%
+%% Description
+% |StopMotor(port, mode)| stops the motor connected to the given |port|. The value |port| can be
+% addressed by the symbolic constants |MOTOR_A|, |MOTOR_B|, |MOTOR_C| and |'all'| (all motor at at
+% the same time) analog to the labeling on the NXT Brick. The argument |mode| can be equal to
+% |'off'| which cuts off the electrical power to the specific motor, so called "COAST" mode. The
+% option |'brake'| will actively halt the motor at the current position (until the next command).
+%%
+% The last optional argument can be a valid NXT handle. If none is
+% specified, the default handle will be used (call |COM_SetDefaultNXT| to
+% set one).
+%%
+%%
+% *Note:*
+%%
+% The value |port| equal to |'all'| can be used to stopp all motors at the same time using only
+% one single Bluetooth packet. After a |StopMotor| command the motor snychronization will be lost.
+%%
+% With |mode| equal to |'off'|, the motor will slowly stop spinning, but using |'brake'| applies
+% real force to the motor to stand still at the current position, just like a real brake.
+%%
+% When calling |StopMotor(..., 'off')|, you also internally issue the commands
+% |SpeedRegulation('off')| and |SyncToMotor('off')|, while using  |'brake'| will call
+% |SpeedRegulation('on')| and |SyncToMotor('off')|.
+%%
+%% Example
+   SetMotor(MOTOR_B);
+   	SetPower(-55);
+   	SetAngleLimit(1200);
+   SendMotorSettings();
+
+   WaitForMotor(MOTOR_A);
+
+   StopMotor(MOTOR_B, 'brake');
+%%
+%% See also
+% WaitForMotor, SendMotorSettings, MOTOR_A, MOTOR_B, MOTOR_C
+%%
+%% Signature
+%%
+% * *Author:* Linus Atorf, Alexander Behrens (see AUTHORS)
+% * *Date:* 2007/10/15
+% * *Copyright:* 2007-2008, RWTH Aachen University
+%
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

@@ -1,0 +1,47 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Preparing Workspace</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="prepare">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Preparing Workspace</h1>
+         <p>Before you develop a new robot control application you should make sure that all NXT handles, global variables and settings
+            are resetted and the old figures are closed. To make sure you are working with a clean workspace use:
+         </p><pre class="codeinput">COM_CloseNXT(<span class="string">'all'</span>)
+clear <span class="string">all</span>
+close <span class="string">all</span>
+</pre><p>at the beginning of your main robot application.</p>
+         <p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Preparing Workspace
+% Before you develop a new robot control application you should make sure that all NXT handles,
+% global variables and settings are resetted and the old figures are closed.
+% To make sure you are working with a clean workspace use: 
+
+COM_CloseNXT('all')
+clear all
+close all
+
+%%
+% at the beginning of your main robot application.
+##### SOURCE END #####
+-->
+   </body>
+</html>

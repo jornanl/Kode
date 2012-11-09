@@ -1,0 +1,173 @@
+function [error,outData]=goToPose(SerialLink,x,y,handles)
+% x,y in [mm]
+global ROBOTPOSE
+
+
+
+if strcmp(SerialLink,'simulator'),
+    %ROBOTPOSE(1)=double(x)*10;
+    %ROBOTPOSE(2)=double(y)*10;
+    [phi,rDist]=cart2pol(x/10-ROBOTPOSE(1),y/10-ROBOTPOSE(2));
+    if phi<0,
+        phi=phi+2*pi;
+    end
+    tmp = floor( phi*180/pi /2 );
+    rAngle = char( tmp );
+    
+    setRobotTarget(SerialLink,rAngle,rDist,handles)
+    error=0;
+        
+else
+   
+    
+    if x<0,
+        
+        %xx=binvec2dec(not(dec2binvec(-1*x)));
+        %x=xx+1;
+        x=2^16 +x;
+    end
+       
+    x1=fix(x/256);
+    x2=x - x1*256;
+    
+    if y<0,
+        %y=y*-1
+        %yy=dec2binvec(y);
+        %yy=not(yy);
+        %yy=binvec2dec(yy);
+        %y=yy+1;
+        y=2^16 +y;
+    end
+       
+    y1=fix(y/256);
+    y2=y - y1*256;
+    
+        
+    error=0;
+    error = error+serialAsyncWrite( SerialLink,'g');
+    error = error+serialAsyncWrite( SerialLink,char(x1) );
+    error = error+serialAsyncWrite( SerialLink,char(x2) );
+    
+    
+    error = error+serialAsyncWrite( SerialLink,char(y1) );
+    error = error+serialAsyncWrite( SerialLink,char(y2) );
+    
+    if error,
+        disp('error sending target position to robot')
+    else
+%        [error, data]=serialSyncRead(SerialLink,1);
+%        if error || data~='n',
+%            disp('target position not acknowledged from robot')
+%        else
+%        
+%        end
+%    end
+        % robot driving, waiting to reach target destination
+        % scanning and driving...receive sensordata here...
+        reachedTarget=0;
+        i=0;
+        t=0;
+        while ~reachedTarget && t<3,
+            disp('Kjører sløyfe')
+            [error, data1]=serialSyncRead(SerialLink,1);
+            disp(char(data1))
+            if ~error,
+                switch data1,
+                    case 'k',
+                        %ping response from robot
+                    case 'o',
+                        error = serialAsyncWrite( SerialLink,'k');
+                        if error,
+                            disp('error sending ping response to robot')
+                        end
+                    case 'q', % robot arrived
+                        reachedTarget=1;
+                        if SerialLink.bytesAvailable
+                            disp('setRobotTarget: bytes in buffer after receiving q, robot arrived')
+                            %[error,data1]=serialSyncRead2(SerialLink);
+                        end
+                    case 'v', % navigation error
+                        disp('navigation error received')
+                        break
+                    case 'f', % robot wants to take a full scan....alright
+                        disp('fullScan')
+                        
+                        break
+                    case {'5', '6', '7', '8'},
+                        disp('no data: sensor  ')
+                        disp(data1-52)
+                        
+                    case {'1', '2' , '3', '4'},
+                        % read IR data
+                        i=1+i;
+                        disp('got sensornummer (49-52) waiting for xxyy')
+                        %data(1)
+                        outData(i,1)=data1-48; % sensor number #
+                    
+                        [myError,data2]=serialSyncRead(SerialLink,4);
+                        if (myError),
+                            return
+                        else
+                            %converting from signed int,
+                            xpos = data2(1)*256+data2(2);
+                            if( xpos > 32767) % negative value
+                                myX=(binvec2dec( not(dec2binvec(xpos)) )+1)*-1;
+                            else
+                                myX=xpos;
+                            end
+          
+                            ypos = data2(3)*256+data2(4);
+                            if(ypos > 32767)% negative value
+                                myY=(binvec2dec( not(dec2binvec(ypos)) )+1)*-1;
+                            else
+                                myY=ypos;
+                            end
+                    
+                        end
+                        outData(i,2)=myX;
+                        outData(i,3)=myY;
+                        
+                    
+                    case 'p', % now comes a position 
+                        disp('setRobotTarget: received pose header')
+                        
+                    case 'r', % radar Angle following
+                        disp('setRobotTarget: received radar angle header')
+                    case 'n',
+                        % NACK
+                        disp('setRobotTarget: received NACK')
+                    case 'a',
+                        % ACK
+                        disp('setRobotTarget: received ACK')
+                    case 'w', % collision warning maybe <10 cm
+                        disp('collision warning received')
+                        set(handles.statusText,'String',num2str('collision warning received') );
+                    case 'e', % collision error <5 cm (Robot stopped!)
+                        disp('collision error received, robot stopped')
+                        break    
+                    otherwise,
+                        disp('navigation_develop\setRobotTarget: Error: No action taken for the received byte..')
+                        disp(double(data1))
+                        %serialSyncRead2(SerialLink);
+                end
+                    
+                
+                
+                
+            else
+                disp(' no bytes received from robot')
+                t++;
+            end
+                
+
+        end
+        bytes_availableSetRobotTarget=SerialLink.bytesAvailable;
+        if bytes_availableSetRobotTarget,
+            data = fread(myCon);
+            disp('leftover data on serialconnection after setRobotTarget: ')
+            disp(double(data))
+        end
+    end
+end
+    
+

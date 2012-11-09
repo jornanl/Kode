@@ -1,0 +1,219 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Example 3: Drive Around Table</title>
+      <meta name="generator" content="MATLAB 7.6">
+      <meta name="date" content="2008-09-30">
+      <meta name="m-file" content="Example_3_DriveAroundTable">
+<link type="text/css" rel="stylesheet" href="../style.css">
+  </head>
+   <body>
+<p class="header">RWTH - Mindstorms NXT Toolbox</p>
+      <div class="content">
+         <h1>Example 3: Drive Around Table</h1>
+         <introduction>
+            <p>In this little demo, our bot drives a square on the floor around a well known table.</p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Clear and close</a></li>
+               <li><a href="#2">Constants</a></li>
+               <li><a href="#3">Open NXT connection</a></li>
+               <li><a href="#4">Initialize Motors...</a></li>
+               <li><a href="#5">Start the engines, main loop begins (repeated 4 times)</a></li>
+               <li><a href="#7">Drive</a></li>
+               <li><a href="#8">Check for the end end of table</a></li>
+               <li><a href="#9">Now please turn</a></li>
+               <li><a href="#10">Check for the end of rotation</a></li>
+               <li><a href="#11">Thats it. Repeat 4 times....</a></li>
+               <li><a href="#13">Close Bluetooth</a></li>
+            </ul>
+         </div>
+         <h2>Clear and close<a name="1"></a></h2><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+</pre><h2>Constants<a name="2"></a></h2><pre class="codeinput">TableLength      = 2850; <span class="comment">% in degrees of motor rotations :-)</span>
+QuarterTurnTicks = 245;  <span class="comment">% in motor degrees, how much is a 90&deg; turn of the bot?</span>
+</pre><h2>Open NXT connection<a name="3"></a></h2><pre class="codeinput">handle = COM_OpenNXT(<span class="string">'bluetooth.ini'</span>, <span class="string">'check'</span>);
+COM_SetDefaultNXT(handle);
+</pre><h2>Initialize Motors...<a name="4"></a></h2>
+         <p>we send this in case they should still be spinning or something...</p><pre class="codeinput">StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+<span class="comment">% and we also "clean up" before we start:</span>
+ResetMotorAngle(MOTOR_B);
+ResetMotorAngle(MOTOR_C);
+</pre><h2>Start the engines, main loop begins (repeated 4 times)<a name="5"></a></h2>
+         <p>4 times because we got 4 equal sides of the table :-)</p><pre class="codeinput"><span class="keyword">for</span> j = 1 : 4
+</pre><h2>Drive<a name="7"></a></h2><pre class="codeinput">    SetMotor(MOTOR_B);
+        SyncToMotor(MOTOR_C); <span class="comment">% this means we have to set parameters only once</span>
+        SetPower(75);
+        SetAngleLimit(TableLength);
+        SetTurnRatio(0); <span class="comment">% straight ahead</span>
+    SendMotorSettings(); <span class="comment">% and GO!</span>
+
+    <span class="comment">% let the robot start:</span>
+    pause(1);
+</pre><h2>Check for the end end of table<a name="8"></a></h2><pre class="codeinput">    WaitForMotor(GetMotor);
+
+    <span class="comment">% give it a little time to correct its mistakes (hey synchronisation</span>
+    <span class="comment">% mode :-)</span>
+    pause(2);
+
+    <span class="comment">% apparently we've stopped!</span>
+    <span class="comment">% then release the motors</span>
+    StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+    <span class="comment">% if we don't do that, syncing again doesn't work</span>
+
+    <span class="comment">% and again, if we don't rest relative counters, synced turning etc doesnt work...</span>
+    ResetMotorAngle(MOTOR_B);
+    ResetMotorAngle(MOTOR_C);
+</pre><h2>Now please turn<a name="9"></a></h2><pre class="codeinput">    SetMotor(MOTOR_B);
+        SyncToMotor(MOTOR_C); <span class="comment">% this means we have to set parameters only once</span>
+        SetPower(30) <span class="comment">% slower is more acurate</span>
+        SetAngleLimit(QuarterTurnTicks);
+        SetTurnRatio(100) <span class="comment">% turn right</span>
+    SendMotorSettings();  <span class="comment">% and GO!</span>
+
+    <span class="comment">% leave the bot time to start turning</span>
+    pause(1);
+</pre><h2>Check for the end of rotation<a name="10"></a></h2><pre class="codeinput">    WaitForMotor(GetMotor);
+
+    <span class="comment">% give it a little time to correct its mistakes (hey synchronisation mode :-)</span>
+    pause(2);
+
+    <span class="comment">% apparently we've stopped!</span>
+    <span class="comment">% then release the motors</span>
+    StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+    <span class="comment">% if we don't do that, syncing again doesn't work</span>
+
+    <span class="comment">% and again, if we don't rest relative counters, synced turning etc doesnt work...</span>
+    ResetMotorAngle(MOTOR_B);
+    ResetMotorAngle(MOTOR_C);
+</pre><h2>Thats it. Repeat 4 times....<a name="11"></a></h2><pre class="codeinput"><span class="keyword">end</span><span class="comment">%for</span>
+
+
+<span class="comment">% Hey! End of a hard day's work</span>
+<span class="comment">% Just to show good style, we close down our motors again:</span>
+StopMotor(<span class="string">'all'</span>, <span class="string">'off'</span>);
+<span class="comment">% although this was completely unnecessary....</span>
+
+<span class="comment">% nice</span>
+</pre><h2>Close Bluetooth<a name="13"></a></h2><pre class="codeinput">COM_CloseNXT(handle);
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.6<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% Example 3: Drive Around Table
+% In this little demo, our bot drives a square on the floor around a well known table.
+
+%% Clear and close
+clear all
+close all
+
+
+%% Constants
+TableLength      = 2850; % in degrees of motor rotations :-)
+QuarterTurnTicks = 245;  % in motor degrees, how much is a 90° turn of the bot?
+
+
+%% Open NXT connection
+handle = COM_OpenNXT('bluetooth.ini', 'check');
+COM_SetDefaultNXT(handle);
+
+
+%% Initialize Motors...
+% we send this in case they should still be spinning or something...
+StopMotor('all', 'off');
+% and we also "clean up" before we start:
+ResetMotorAngle(MOTOR_B);
+ResetMotorAngle(MOTOR_C);
+
+
+%% Start the engines, main loop begins (repeated 4 times)
+% 4 times because we got 4 equal sides of the table :-)
+for j = 1 : 4
+
+%% Drive
+    SetMotor(MOTOR_B);
+        SyncToMotor(MOTOR_C); % this means we have to set parameters only once
+        SetPower(75);
+        SetAngleLimit(TableLength);
+        SetTurnRatio(0); % straight ahead
+    SendMotorSettings(); % and GO!
+    
+    % let the robot start:
+    pause(1);
+
+%% Check for the end end of table
+    WaitForMotor(GetMotor);
+    
+    % give it a little time to correct its mistakes (hey synchronisation
+    % mode :-)
+    pause(2);
+    
+    % apparently we've stopped!
+    % then release the motors
+    StopMotor('all', 'off');
+    % if we don't do that, syncing again doesn't work
+    
+    % and again, if we don't rest relative counters, synced turning etc doesnt work...
+    ResetMotorAngle(MOTOR_B);
+    ResetMotorAngle(MOTOR_C);
+    
+    
+%% Now please turn 
+
+    SetMotor(MOTOR_B);
+        SyncToMotor(MOTOR_C); % this means we have to set parameters only once
+        SetPower(30) % slower is more acurate
+        SetAngleLimit(QuarterTurnTicks);
+        SetTurnRatio(100) % turn right
+    SendMotorSettings();  % and GO!
+
+    % leave the bot time to start turning
+    pause(1);
+    
+%% Check for the end of rotation
+
+    WaitForMotor(GetMotor);
+    
+    % give it a little time to correct its mistakes (hey synchronisation mode :-)
+    pause(2);
+    
+    % apparently we've stopped!
+    % then release the motors
+    StopMotor('all', 'off');
+    % if we don't do that, syncing again doesn't work
+    
+    % and again, if we don't rest relative counters, synced turning etc doesnt work...
+    ResetMotorAngle(MOTOR_B);
+    ResetMotorAngle(MOTOR_C);
+    
+%% Thats it. Repeat 4 times....
+end%for
+
+
+% Hey! End of a hard day's work
+% Just to show good style, we close down our motors again:
+StopMotor('all', 'off');
+% although this was completely unnecessary....
+
+% nice
+
+
+%% Close Bluetooth
+
+COM_CloseNXT(handle);
+
+##### SOURCE END #####
+-->
+   </body>
+</html>

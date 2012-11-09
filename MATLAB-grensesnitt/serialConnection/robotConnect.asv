@@ -1,0 +1,24 @@
+function [myCon]=robotConnect(handles)
+    contents = get(handles.COMValg,'String'); %returns COMValg contents as cell array
+    port = contents{get(handles.COMValg,'Value')}; %returns selected item from COMValg
+    if strcmp(port,'simulator')
+        myCon=port;
+        
+        
+        
+        set(handles.statusText,'String',strcat('connected to ',port ))
+    else
+        myCon = serial(port);
+        set(myCon,'BaudRate',57600);
+        set(myCon,'TimeOut',5); %5sec timeout
+        try
+            fopen(myCon);
+            set(handles.statusText,'String',strcat(port,' is:', myCon.status, ' at baudrate:', int2str(myCon.BaudRate) ));        
+        catch
+            set(handles.statusText,'String',strcat(port,' is not available' ));
+            stopasync(myCon);
+            fclose(myCon);
+            delete(myCon);
+            myCon = 0;        
+        end;
+    end

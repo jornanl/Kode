@@ -1,0 +1,6 @@
+function mapping_export_txt(matrix)
+
+filename = strcat
+dlmwrite(filename,matrix,'delimiter', ';', 'newline', 'pc');
+
+end

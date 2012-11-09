@@ -1,0 +1,7 @@
+function [error,data]=serialSyncRead2(serialCon)
+error=0;
+
+data = fread(serialCon); 
+if( isempty(data) )
+    error=1;
+end;

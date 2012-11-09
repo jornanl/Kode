@@ -1,0 +1,35 @@
+function [vinkel rot_B rot_C] = nxt_turn_degrees(degrees)
+
+%positiv retning er rotasjon med klokka
+data_B = nxt_get_motor_info(MOTOR_B);
+data_C = nxt_get_motor_info(MOTOR_C);
+
+
+
+gear = 4.222;
+speed = 20;
+
+motor_input = (degrees*gear)/2;
+
+rot_B = motor_input;
+rot_C = motor_input;
+%{
+SetMotor(MOTOR_B);
+SetPower(speed);
+SetRampMode off;
+SetAngleLimit(rot_B)
+SendMotorSettings;
+
+SetMotor(MOTOR_C);
+SetPower(-speed);
+SetRampMode off;
+SetAngleLimit(rot_C)
+SendMotorSettings;
+%}
+
+MotorRotateAbs(MOTOR_B,rot_B,10);
+MotorRotateAbs(MOTOR_C,-rot_C,10);
+
+while (data_B =
+
+vinkel = motor_input;

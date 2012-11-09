@@ -1,0 +1,236 @@
+function spath = findShpath(mapMatrix,startPosition,currentPosition)
+%This function requiers
+%findShpath(mapMatrix,startPosistion,currentPosition), and returns a
+%shortest path matrix containing the x and y points for the shortest path
+%rute
+%
+%Where mapMatrix is the matrix built by createMapMatrix, startPosition is
+%the start position of the robot and currentPosition is the location where
+%the robot is currently located (vector). These values are all returned by
+%createMapMatrix.
+%
+%Further this function computes the shortest path from the current position
+%back to start postion.
+
+
+spath = [];
+
+% Map grid:
+M = mapMatrix;
+M = flipdim(M,1);
+
+ mSize = size(M,1);
+ startPosition(2) = mSize - startPosition(2);
+ currentPosition(2) = mSize - currentPosition(2);
+ 
+  
+ if M(startPosition(1),startPosition(2)) == 1;
+    M(startPosition(1),startPosition(2)) = 0;
+ end
+ if M(currentPosition(1),currentPosition(2)) == 1;
+     M(currentPosition(1),currentPosition(2)) = 0;
+ end 
+ 
+%  
+% figure(31)
+% hf=figure(31);
+% hold on
+% hM=pcolor(M);
+% colormap([1 1 1;1 0 0])
+% set(hM,'edgecolor','none','facecolor','flat')
+% 
+% plot(startPosition(1),startPosition(2),'g.')
+% plot(currentPosition(1),currentPosition(2),'g.')
+% 
+% xlabel('Column Coordinate')
+% ylabel('Row Coordinate')
+% title('Computing Shortest Path...','fontsize',12)
+
+ % Intitial coordinates (row,col)
+ri = startPosition(2);
+ci = startPosition(1);
+
+% Current coordinates (row,col)
+rf = currentPosition(2);
+cf = currentPosition(1);
+% Convert mapmatrix to a logical matrix, where any non-zero real element
+% is convertet to 1.
+
+M=logical(M);
+%Checking compability of the matrix
+if any([ri ci rf cf] ~= round([ri ci rf cf]))
+    error('Initial and final points must have integer row & column coordinates.')
+end
+if ri>size(M,1) | ci > size(M,2) | rf > size(M,1) | cf > size(M,2) | ...
+        any([ri ci rf cf] < 1)
+    error('Initial and final points must be within the grid.')
+end
+if M(ri,ci) >= 1
+    error('Initial point is within an obstacle grid square.')
+end
+if M(rf,cf) >= 1
+    error('Destination point is within an obstacle grid square.')
+end
+if ri == rf & ci == cf & nargout < 3 % no need to solve
+    r=[ri;rf];
+    c=[ci;cf];
+    return
+end
+
+% Adding weights to mapmatrix
+
+W=zeros(size(M));
+W(ri,ci)=1;
+H=zeros(size(M));
+yespop = sum(W(:)>1);
+nochangepop = 0;
+itercount = 0;
+diffconst = 0.1;
+while nochangepop < 20
+    itercount = itercount + 1;
+    W(1:end-1 ,:) = W(1:end-1 ,:) + diffconst * W(2:end,:);
+    W(2:end,:) = W(2:end,:) + diffconst * W(1:end-1 ,:);
+    W(:,1:end-1 ) = W(:,1:end-1 ) + diffconst * W(:,2:end );
+    W(:,2:end) = W(:,2:end) + diffconst * W(:,1:end-1 );
+    %Obsticals located in the mapMatrix is recognized, and therefore is not
+    %a leagal pathgrid
+    W(logical(M)) = 0;
+    H(logical(W>1 & ~H))=itercount;
+    yespopold = yespop;
+    yespop = sum(W(:)>1);
+    if abs(yespop-yespopold) < 1
+        nochangepop = nochangepop + 1;
+    end
+end
+
+% reached the end?
+
+if H(rf,cf) == 0
+    warning('No unobstructed route exists.')
+    r = NaN;
+    c = NaN;
+    return
+end
+
+
+H(H==0)=nan;
+
+% adding larger weights for obstacles
+HB = nan*ones(size(H)+2);
+HB(2:end-1,2:end-1)=H;
+[kr,kc]=find(isnan(H));
+% max local value:
+HM = max(cat(3,HB(1:end-2,1:end-2),...
+    HB(1:end-2,2:end-1),...
+    HB(1:end-2,3:end  ),...
+    HB(2:end-1,1:end-2),...
+    HB(2:end-1,3:end  ),...
+    HB(3:end  ,1:end-2),...
+    HB(3:end  ,2:end-1),...
+    HB(3:end  ,3:end  )),[],3);
+H(isnan(H))=HM(isnan(H))+1; % now 1+max of neighbors
+
+% preallocate path storage space
+r=ones(prod(size(M)),1)*nan;
+c=ones(prod(size(M)),1)*nan;
+
+% start at end and go backwards down the gradient
+r(1)=rf;
+c(1)=cf;
+[GX,GY] = gradient(H);
+GX = -GX;
+GY = -GY;
+iter = 0;
+continflag=1;
+rmax=size(M,1);
+cmax=size(M,2);
+speed = .5;
+%Use interpolation to find a graph to represent the route
+while continflag
+    iter = iter+1;
+    dr = interpn(GY,r(iter),c(iter),'*linear');
+    dc = interpn(GX,r(iter),c(iter),'*linear');
+    dr = dr * (rand*.002+.999);
+    dc = dc * (rand*.002+.999);
+    dv = sqrt(dr^2+dc^2);
+    dr = speed * dr/dv;
+    dc = speed * dc/dv;
+    r(iter+1)=r(iter) + dr;
+    c(iter+1)=c(iter) + dc;
+    if r(iter+1)<1;r(iter+1)=1;end
+    if c(iter+1)<1;c(iter+1)=1;end
+    if r(iter+1)>rmax;r(iter+1)=rmax;end
+    if c(iter+1)>cmax;c(iter+1)=cmax;end
+    if ((r(iter+1)-ri)^2+(c(iter+1)-ci)^2)<1;
+        continflag=0;
+    end
+end
+
+% clean up path coordinates:
+
+r=r(~isnan(r));
+c=c(~isnan(c));
+c=c(end:-1:1);
+r=r(end:-1:1);
+if c(1) ~= ci
+    c=[ci;c];
+end
+if c(end) ~= cf
+    c=[c;cf];
+end
+if r(1)~=ri
+    r=[ri;r];
+end
+if r(end)~=rf
+    r=[r;rf];
+end
+
+diff = size(c,1) - size(r,1);
+if diff ~= 0;
+    if diff < 0;
+        r(2:1-diff) = [];
+    else
+        c(2:1+diff) = [];
+    end
+end
+
+% Tighten the string:
+
+continflag=1;
+iter=0;
+while continflag
+    iter=iter+1;
+    if iter>50000
+        continflag=0;
+        warning('Max iterations exceeded.')
+    end
+    rold = r;
+    cold = c;
+    r2 = [r(1);(r(1:end-2)+r(3:end))/2;r(end)];
+    c2 = [c(1);(c(1:end-2)+c(3:end))/2;c(end)];
+    dr = r2-r;
+    dc = c2-c;
+    dn = .5*sqrt(dr.^2+dc.^2);
+    k = dn>.1;
+    dr(k) = .1*dr(k)./dn(k);
+    dc(k) = .1*dc(k)./dn(k);
+    r=r+dr;
+    c=c+dc;
+    k=interpn(M,r,c,'*nearest')>.5;
+    r(k)=r(k)-dr(k);
+    c(k)=c(k)-dc(k);
+    if max(abs([r-rold;c-cold])) < 1e-4
+        continflag=0;
+    end
+end
+
+
+spath = [c r];
+
+% display result:
+% plot(c,r,'g.-')
+% title('Shortest Path','fontsize',12)
+% hold off
+
+end
+
