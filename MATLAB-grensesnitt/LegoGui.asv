@@ -507,7 +507,7 @@ elseif( get(handles.togglebutton_lineBeaconNav,'Value')==1 ) % line/beacon navig
     beaconParam.displayLocal = get(handles.checkbox_localMap,'Value');
     beaconParam.displayMatch = get(handles.checkbox_matching,'Value');   
     
-    if ~strcmp(SERIALLINK,'simulator')
+    if ~strcmp(SERIALLINK,'simulator'),
         beaconParam.simulation = 0;
         handles.simParams=[];
     end
