@@ -513,7 +513,7 @@ elseif( get(handles.togglebutton_lineBeaconNav,'Value')==1 ) % line/beacon navig
     end
     
     
-    lineBeaconSLAM(SERIALLINK,handles,lineParam,beaconParam); 
+    LineBeaconSLAM(SERIALLINK,handles,lineParam,beaconParam); 
         
 else
     disp('no navigation method chosen...LegoGui.m')
