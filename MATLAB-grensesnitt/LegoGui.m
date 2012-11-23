@@ -469,7 +469,7 @@ elseif( get(handles.togglebutton_lineBeaconNav,'Value')==1 ) % line/beacon navig
     
     lineParam.goHome = get(handles.checkbox_goHome,'Value');
     
-    if strcmp(SERIALLINK,'simulator')
+    if strcmp(SERIALLINK,'simulator'),
         % simulation properties
         lineParam.simulation = 1;
         handles.simParams.startSimX=str2double(get(handles.startSimX,'String'));
@@ -491,10 +491,10 @@ elseif( get(handles.togglebutton_lineBeaconNav,'Value')==1 ) % line/beacon navig
 
 %%%-- integration of lineSLAM and beaconSLAM --%%%
     
-    if strcmp(handles.beaconParam.changed,'false') % parameters not manipulated, set them to standard values 
+    if strcmp(handles.beaconParam.changed,'false'), % parameters not manipulated, set them to standard values 
         beaconParam.beaconthreshdist = 0.02;
         beaconParam.alpha = 0.75;
-    elseif strcmp(handles.beaconParam.changed,'true')
+    elseif strcmp(handles.beaconParam.changed,'true'),
         beaconParam=handles.beaconParam;
     end
     %robot parameters
@@ -507,7 +507,7 @@ elseif( get(handles.togglebutton_lineBeaconNav,'Value')==1 ) % line/beacon navig
     beaconParam.displayLocal = get(handles.checkbox_localMap,'Value');
     beaconParam.displayMatch = get(handles.checkbox_matching,'Value');   
     
-    if ~strcmp(SERIALLINK,'simulator')
+    if ~strcmp(SERIALLINK,'simulator'),
         beaconParam.simulation = 0;
         handles.simParams=[];
     end

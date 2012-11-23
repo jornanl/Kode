@@ -41,7 +41,7 @@ if (navData.state==0),
 
 %% normal navigation state
 elseif ( navData.state == 1)
-    if navData.totalDist>1 % && handles.goBack
+    if navData.totalDist>1 && handles.goBack
         % && navData.state~=91        handles.goBack nonexistent...
         % enter go back to startpoint
         navData.state=90;
